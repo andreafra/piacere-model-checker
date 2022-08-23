@@ -1,18 +1,37 @@
 variables:
+  # -------------------------
+  # Runner and service images
+  # -------------------------
   DOCKER_IMAGE: "docker:20.10.14"
   DOCKER_DIND_IMAGE: "${DOCKER_IMAGE}-dind"
 
+  # ------------------------
+  # Component image tag data
+  # ------------------------
   COMPONENT_WP: wp4
   COMPONENT_IMAGE_NAME: dmc
   
   TMP_IMAGE: ${CI_REGISTRY_HOST}/temp/${COMPONENT_IMAGE_NAME}:${CI_PIPELINE_ID}
   TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:${CI_COMMIT_BRANCH}
 
+  # ----------------------------------------------------------
+  # Space-separated lists of strings to pass to the downstream
+  # integration tests and deployment pipeline.
+  # ------------------------------------------
+  # Component image abbreviation list
+  IMAGE_NAMES: "$COMPONENT_IMAGE_NAME"
+  # Corresponding temporary image tag list 
+  TMP_IMAGES: "$TMP_IMAGE"
+  # Corresponding target image tag list   
+  TARGET_IMAGES: "$TARGET_IMAGE"
+
 stages:
 #  - quality
   - build
-  - tests
-  - deploy
+  - security
+  - unit-tests
+  - pre-downstream
+  - integration-tests-publish-deploy
 
 # Artifactory login command ---------
 
@@ -45,7 +64,7 @@ build-temp-dmc:
   - wget --no-verbose https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -O - | tar -zxvf -
 
 security-trivy-dmc:
-  stage: tests
+  stage: security
   image: $DOCKER_IMAGE
   services:
     - name: $DOCKER_DIND_IMAGE
@@ -61,6 +80,8 @@ security-trivy-dmc:
     reports:
       container_scanning: $REPORT_FILENAME
     expire_in: 1 hour
+  needs:
+    - build-temp-dmc
   tags:
     - docker
 
@@ -68,7 +89,7 @@ security-trivy-dmc:
 
 run-functional-tests:
   image: $DOCKER_IMAGE
-  stage: tests
+  stage: unit-tests
   services:
     - $DOCKER_DIND_IMAGE
   variables:
@@ -85,27 +106,50 @@ run-functional-tests:
     - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "python -m pytest"
     # Stop the tests container.
     - docker stop $TESTS_CONTAINER_NAME
+  needs:
+    - build-temp-dmc
   tags:
     - docker
 
-# Deploy job ------------------------
+# Helper workaround job that enables passing fully evaluated variables to the ---------
+# downstream pipeline (in the integration-tests-publish-deploy-trigger job) -----------
 
-deploy-dmc:
-  stage: deploy
-  image: $DOCKER_IMAGE
-  only:
-    - y1
-  services:
-    - $DOCKER_DIND_IMAGE
-  before_script:
-    - export VERSION=$(date +%Y%m%d)
-    - export TARGET_IMAGE_VERSIONED=${TARGET_IMAGE}-${VERSION}-${CI_PIPELINE_ID}
-    - *artifactory-login
+evaluate-variables:
+  image: alpine:3.16.1
+  stage: pre-downstream
+  variables:
+    UPSTREAM_VARIABLES_FILENAME: "upstream.env"
   script:
-    - docker pull $TMP_IMAGE
-    - docker tag $TMP_IMAGE $TARGET_IMAGE
-    - docker tag $TMP_IMAGE $TARGET_IMAGE_VERSIONED
-    - docker push $TARGET_IMAGE_VERSIONED
-    - docker push $TARGET_IMAGE
+    # Force variable evaluation in this pipeline, instead of the downstream one.
+    # The variables saved in the $UPSTREAM_VARIABLES_FILENAME artifact are available
+    # in the below job that triggers the downstream t23-ci-setup pipeline and passes
+    # the fully expanded variables.
+    - echo "IMAGE_NAME_LIST=${IMAGE_NAMES}" >> $UPSTREAM_VARIABLES_FILENAME
+    - echo "TMP_IMAGE_LIST=${TMP_IMAGES}" >> $UPSTREAM_VARIABLES_FILENAME
+    #- echo "TARGET_IMAGE_LIST=${TARGET_IMAGES}" >> $UPSTREAM_VARIABLES_FILENAME
+    # TODO delete the below, uncomment the above; this is only for testing purposes
+    - echo "TARGET_IMAGE_LIST=${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:y1" >> $UPSTREAM_VARIABLES_FILENAME
+  artifacts:
+    reports:
+      dotenv: $UPSTREAM_VARIABLES_FILENAME
   tags:
     - docker
+
+# Integration tests + image publication + deployment pipeline -------------------------
+# Defined in https://git.code.tecnalia.com/piacere/private/t23-ci-setup ---------------
+
+integration-tests-publish-deploy-trigger:
+  stage: integration-tests-publish-deploy
+  variables:
+    IMAGE_NAMES: "$IMAGE_NAME_LIST"
+    TMP_IMAGES: "$TMP_IMAGE_LIST"
+    TARGET_IMAGES: "$TARGET_IMAGE_LIST"
+    COMPONENT_UPDATE: "true"
+    UPSTREAM_PIPELINE_ID: "$CI_PIPELINE_ID"
+  trigger:
+    project: piacere/private/t23-ci-setup
+    branch: ci/auto-test-and-deploy
+    strategy: depend
+  needs:
+    - job: evaluate-variables
+      artifacts: true
