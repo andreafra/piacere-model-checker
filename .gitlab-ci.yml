@@ -12,7 +12,9 @@ variables:
   COMPONENT_IMAGE_NAME: dmc
   
   TMP_IMAGE: ${CI_REGISTRY_HOST}/temp/${COMPONENT_IMAGE_NAME}:${CI_PIPELINE_ID}
-  TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:${CI_COMMIT_BRANCH}
+  #TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:${CI_COMMIT_BRANCH}
+  # TODO delete the below, uncomment the above. This is only for testing purposes.
+  TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:y1
 
   # ----------------------------------------------------------
   # Space-separated lists of strings to pass to the downstream
@@ -111,45 +113,12 @@ run-functional-tests:
   tags:
     - docker
 
-# Helper workaround job that enables passing fully evaluated variables to the ---------
-# downstream pipeline (in the integration-tests-publish-deploy-trigger job) -----------
+# Include the CI script with jobs responsible for triggering ----------
+# the downstream pipeline in the t23-ci-setup project, which ----------
+# runs the integration tests, publishes the new component -------------
+# version's image(s) and deploys it to the CI machine. ----------------
 
-evaluate-variables:
-  image: alpine:3.16.1
-  stage: pre-downstream
-  variables:
-    UPSTREAM_VARIABLES_FILENAME: "upstream.env"
-  script:
-    # Force variable evaluation in this pipeline, instead of the downstream one.
-    # The variables saved in the $UPSTREAM_VARIABLES_FILENAME artifact are available
-    # in the below job that triggers the downstream t23-ci-setup pipeline and passes
-    # the fully expanded variables.
-    - echo "IMAGE_NAME_LIST=${IMAGE_NAMES}" >> $UPSTREAM_VARIABLES_FILENAME
-    - echo "TMP_IMAGE_LIST=${TMP_IMAGES}" >> $UPSTREAM_VARIABLES_FILENAME
-    #- echo "TARGET_IMAGE_LIST=${TARGET_IMAGES}" >> $UPSTREAM_VARIABLES_FILENAME
-    # TODO delete the below, uncomment the above; this is only for testing purposes
-    - echo "TARGET_IMAGE_LIST=${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:y1" >> $UPSTREAM_VARIABLES_FILENAME
-  artifacts:
-    reports:
-      dotenv: $UPSTREAM_VARIABLES_FILENAME
-  tags:
-    - docker
-
-# Integration tests + image publication + deployment pipeline -------------------------
-# Defined in https://git.code.tecnalia.com/piacere/private/t23-ci-setup ---------------
-
-integration-tests-publish-deploy-trigger:
-  stage: integration-tests-publish-deploy
-  variables:
-    IMAGE_NAMES: "$IMAGE_NAME_LIST"
-    TMP_IMAGES: "$TMP_IMAGE_LIST"
-    TARGET_IMAGES: "$TARGET_IMAGE_LIST"
-    COMPONENT_UPDATE: "true"
-    UPSTREAM_PIPELINE_ID: "$CI_PIPELINE_ID"
-  trigger:
-    project: piacere/private/t23-ci-setup
-    branch: ci/auto-test-and-deploy
-    strategy: depend
-  needs:
-    - job: evaluate-variables
-      artifacts: true
+include:
+  - project: 'piacere/private/t23-ci-setup'
+    ref: 'ci/auto-test-and-deploy' # TODO change this. It's here only for testing purposes
+    file: '/gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml'
