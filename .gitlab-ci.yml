@@ -85,6 +85,8 @@ run-unit-tests:
     # Stop the tests container.
     - docker stop $TESTS_CONTAINER_NAME
   needs:
-    - build-temp-dmc
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
   tags:
     - docker
