@@ -1,44 +1,40 @@
-variables:
-  # -------------------------
-  # Runner and service images
-  # -------------------------
-  DOCKER_IMAGE: "docker:20.10.14"
-  DOCKER_DIND_IMAGE: "${DOCKER_IMAGE}-dind"
+include:
+  - project: piacere/private/t23-ci-setup
+    ref: main
+    file:
+      - gitlab-ci-scripts/utils.gitlab-ci.yml
 
+      # Image tag variables generation job -------------
+      # Stage: variable-generation ---------------------
+      - gitlab-ci-scripts/generate-variables.gitlab-ci.yml
+      
+      # Downstream t23-ci-setup pipeline trigger job ---
+      # Stage: integration-tests-publish-deploy --------
+      # TODO: Uncomment this to enable downstream
+      #- gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml
+
+variables:
   # ------------------------
   # Component image tag data
   # ------------------------
   COMPONENT_WP: wp4
-  COMPONENT_IMAGE_NAME: dmc
-  
-  TMP_IMAGE: ${CI_REGISTRY_HOST}/temp/${COMPONENT_IMAGE_NAME}:${CI_PIPELINE_ID}
-  #TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:${CI_COMMIT_BRANCH}
-  # TODO delete the below, uncomment the above. This is only for testing purposes.
-  TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:y1
+  DMC_IMAGE_NAME: dmc
 
-  # ----------------------------------------------------------
-  # Space-separated lists of strings to pass to the downstream
-  # integration tests and deployment pipeline.
   # ------------------------------------------
-  # Component image abbreviation list
-  IMAGE_NAMES: "$COMPONENT_IMAGE_NAME"
-  # Corresponding temporary image tag list 
-  TMP_IMAGES: "$TMP_IMAGE"
-  # Corresponding target image tag list   
-  TARGET_IMAGES: "$TARGET_IMAGE"
+  # Space-separated component image abbreviation list
+  # used to generate image tags and related variables.
+  # It is also passed to the downstream integration tests,
+  # publication and deployment pipeline
+  # ------------------------------------------
+  IMAGE_NAMES: "$DMC_IMAGE_NAME"
 
 stages:
-#  - quality
+  - variable-generation
+# TODO:  - quality
   - build
   - security
   - unit-tests
-  - pre-downstream
   - integration-tests-publish-deploy
-
-# Artifactory login command ---------
-
-.artifactory-login: &artifactory-login
-  - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY_HOST -u "$CI_REGISTRY_USER" --password-stdin
 
 # Quality jobs ----------------------
 
@@ -47,63 +43,43 @@ stages:
 # Build jobs ----------------------
 
 build-temp-dmc:
-  image: $DOCKER_IMAGE
   stage: build
-  services:
-    - $DOCKER_DIND_IMAGE
-  before_script:
-    - *artifactory-login
-  script:
-    - docker build -t $TMP_IMAGE .
-    - docker push $TMP_IMAGE
-  tags:
-    - docker
+  variables:
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+    DOCKERFILE_PATH: "."
+  trigger: !reference [.trigger-build]
 
-# Security job in tests stage------------------------
-
-.get-trivy: &get-trivy
-  - export TRIVY_VERSION=$(wget -qO - "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-  - wget --no-verbose https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -O - | tar -zxvf -
+# Security job ------------------------
 
 security-trivy-dmc:
   stage: security
-  image: $DOCKER_IMAGE
-  services:
-    - name: $DOCKER_DIND_IMAGE
   variables:
-    REPORT_FILENAME: ${COMPONENT_IMAGE_NAME}-container-scanning-report.json
-  before_script:
-    - *artifactory-login
-    - *get-trivy
-  allow_failure: true
-  script:
-    - ./trivy i -o $REPORT_FILENAME $TMP_IMAGE
-  artifacts:
-    reports:
-      container_scanning: $REPORT_FILENAME
-    expire_in: 1 hour
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+  trigger: !reference [.trigger-security-trivy]
   needs:
-    - build-temp-dmc
-  tags:
-    - docker
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
 
-# Tests jobs ------------------------
+# Unit tests job ------------------------
 
-run-functional-tests:
+run-unit-tests:
   image: $DOCKER_IMAGE
   stage: unit-tests
   services:
     - $DOCKER_DIND_IMAGE
   variables:
-    TESTS_CONTAINER_NAME: functional-tester
+    TESTS_CONTAINER_NAME: unit-tester
   before_script:
-    - *artifactory-login
+    - !reference [.artifactory-login]
   script:
     # Tests assume port 8080, while the Dockerfile CMD runs the server on port 80.
     # Thus, we need to override the command so that the server is run on port 8080.
-    - docker run --name $TESTS_CONTAINER_NAME -d $TMP_IMAGE uwsgi --http :8080 --yaml uwsgi_config.yaml
+    - docker run --name $TESTS_CONTAINER_NAME -d $TMP_IMAGE_DMC
+        uwsgi --http :8080 --yaml uwsgi_config.yaml
     # Install everything required for the tests.
-    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "pip install -r dev-requirements.txt"
+    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c
+        "pip install -r dev-requirements.txt"
     # Run the tests.
     - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "python -m pytest"
     # Stop the tests container.
@@ -112,13 +88,3 @@ run-functional-tests:
     - build-temp-dmc
   tags:
     - docker
-
-# Include the CI script with jobs responsible for triggering ----------
-# the downstream pipeline in the t23-ci-setup project, which ----------
-# runs the integration tests, publishes the new component -------------
-# version's image(s) and deploys it to the CI machine. ----------------
-
-include:
-  - project: 'piacere/private/t23-ci-setup'
-    ref: 'ci/auto-test-and-deploy' # TODO change this. It's here only for testing purposes
-    file: '/gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml'
