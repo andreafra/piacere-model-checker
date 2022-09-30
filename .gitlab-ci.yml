@@ -10,8 +10,7 @@ include:
       
       # Downstream t23-ci-setup pipeline trigger job ---
       # Stage: integration-tests-publish-deploy --------
-      # TODO: Uncomment this to enable downstream
-      #- gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml
+      - gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml
 
 variables:
   # ------------------------
