@@ -47,6 +47,15 @@ build-temp-dmc:
     TMP_IMAGE: "$TMP_IMAGE_DMC"
     DOCKERFILE_PATH: "."
   trigger: !reference [.trigger-build]
+  services:
+    - $DOCKER_DIND_IMAGE
+  before_script:
+    - *artifactory-login
+  script:
+    - docker build -t $TMP_IMAGE --label "com.jfrog.artifactory.retention.maxCount=3" .
+    - docker push $TMP_IMAGE
+  tags:
+    - docker
 
 # Security job ------------------------
 
@@ -86,5 +95,25 @@ run-functional-tests:
     - job: build-temp-dmc
     - job: generate-variables
       artifacts: true
+  tags:
+    - docker
+
+# Deploy job ------------------------
+
+deploy-dmc:
+  stage: deploy
+  image: $DOCKER_IMAGE
+  only:
+    - y1
+  services:
+    - $DOCKER_DIND_IMAGE
+  before_script:
+    - export VERSION=$(date +%Y%m%d)
+    - export TARGET_IMAGE_VERSIONED=${TARGET_IMAGE}-${VERSION}-${CI_PIPELINE_ID}
+    - *artifactory-login
+  script:
+    - docker pull $TMP_IMAGE
+    - docker tag $TMP_IMAGE $TARGET_IMAGE
+    - docker push $TARGET_IMAGE
   tags:
     - docker
