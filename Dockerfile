@@ -1,11 +1,15 @@
-FROM python:3.9.12-bullseye
+FROM python:3.10-bullseye
 
 COPY . /opt/mc_openapi
 
 RUN useradd -mU mc
 USER mc
 ENV PATH="/home/mc/.local/bin:${PATH}"
-RUN pip install -r /opt/mc_openapi/requirements.txt
+RUN pip install --upgrade pip \
+    && pip install -r /opt/mc_openapi/requirements.txt
 WORKDIR /opt/mc_openapi
 
-CMD ["uwsgi", "--http", ":80", "--yaml", "uwsgi_config.yaml"]
+ENV UVICORN_PORT=80 \
+    UVICORN_HOST=0.0.0.0
+
+CMD ["uvicorn", "--interface", "wsgi", "mc_openapi.app_config:app"]

@@ -41,6 +41,11 @@ def parse_xmi_model(raw_model: bytes) -> EObject:
     return resource.contents[0]
 
 
+def check_domlx_version(model: EObject):
+    if hasattr(model, "version") and model.version != "v2":
+        raise RuntimeError(f"Supplied with DOMLX model of unsupported version {model.version} (supported version is v2).")
+
+
 def parse_doml_model(raw_model: bytes, mm: MetaModel) -> IntermediateModel:
     def parse_network_address_range(arange: str) -> Attributes:
         ipnet = ip_network(arange)
@@ -53,16 +58,26 @@ def parse_doml_model(raw_model: bytes, mm: MetaModel) -> IntermediateModel:
         return {"endPoint": [int(ip_address(addr))]}
 
     model = parse_xmi_model(raw_model)
+    check_domlx_version(model)
 
     sp = SpecialParser(mm, {
         ("infrastructure_Network", "addressRange"): parse_network_address_range,
         ("infrastructure_NetworkInterface", "endPoint"): parse_iface_address,
+        ("infrastructure_ComputingNode", "memory_mb"): lambda mem: {"memory_mb":  [int(mem)], "memory_kb": [int(mem * 1024)]},
         ("commons_FProperty", "value"): lambda fval: {"value": [str(fval)]},
     })
     elp = ELayerParser(mm, sp)
-    elp.parse_elayer(model.application)
-    elp.parse_elayer(model.infrastructure)
-    elp.parse_elayer(model.activeConfiguration)
-    im = elp.parse_elayer(model.activeInfrastructure)
+    if model.application:
+        elp.parse_elayer(model.application)
+    if model.infrastructure:
+        elp.parse_elayer(model.infrastructure)
+    else:
+        raise RuntimeError("Abstract infrastructure layer is missing.")
+    if model.activeConfiguration:
+        elp.parse_elayer(model.activeConfiguration)
+    if model.activeInfrastructure:
+        im = elp.parse_elayer(model.activeInfrastructure)
+    else:
+        raise RuntimeError("No active concrete infrastructure layer has been specified.")
 
     return im
