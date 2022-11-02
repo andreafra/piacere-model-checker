@@ -32,7 +32,7 @@ stages:
 # TODO:  - quality
   - build
   - security
-  - unit-tests
+  - functional-tests
   - integration-tests-publish-deploy
 
 # Quality jobs ----------------------
@@ -60,22 +60,21 @@ security-trivy-dmc:
     - job: generate-variables
       artifacts: true
 
-# Unit tests job ------------------------
+# functional tests job ------------------------
 
-run-unit-tests:
+run-functional-tests:
   image: $DOCKER_IMAGE
-  stage: unit-tests
+  stage: functional-tests
   services:
     - $DOCKER_DIND_IMAGE
   variables:
-    TESTS_CONTAINER_NAME: unit-tester
+    TESTS_CONTAINER_NAME: functional-tester
   before_script:
     - !reference [.artifactory-login]
   script:
     # Tests assume port 8080, while the Dockerfile CMD runs the server on port 80.
     # Thus, we need to override the command so that the server is run on port 8080.
-    - docker run --name $TESTS_CONTAINER_NAME -d $TMP_IMAGE_DMC
-        uwsgi --http :8080 --yaml uwsgi_config.yaml
+    - docker run --name $TESTS_CONTAINER_NAME -d -e "UVICORN_PORT=8080" $TMP_IMAGE_DMC
     # Install everything required for the tests.
     - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c
         "pip install -r dev-requirements.txt"
