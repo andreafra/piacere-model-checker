@@ -1,23 +1,39 @@
-variables:
-  DOCKER_IMAGE: "docker:20.10.14"
-  DOCKER_DIND_IMAGE: "${DOCKER_IMAGE}-dind"
+include:
+  - project: piacere/private/t23-ci-setup
+    ref: main
+    file:
+      - gitlab-ci-scripts/utils.gitlab-ci.yml
 
+      # Image tag variables generation job -------------
+      # Stage: variable-generation ---------------------
+      - gitlab-ci-scripts/generate-variables.gitlab-ci.yml
+      
+      # Downstream t23-ci-setup pipeline trigger job ---
+      # Stage: integration-tests-publish-deploy --------
+      - gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml
+
+variables:
+  # ------------------------
+  # Component image tag data
+  # ------------------------
   COMPONENT_WP: wp4
-  COMPONENT_IMAGE_NAME: dmc
-  
-  TMP_IMAGE: ${CI_REGISTRY_HOST}/temp/${COMPONENT_IMAGE_NAME}:${CI_PIPELINE_ID}
-  TARGET_IMAGE: ${CI_REGISTRY_HOST}/${COMPONENT_WP}/${COMPONENT_IMAGE_NAME}:${CI_COMMIT_BRANCH}
+  DMC_IMAGE_NAME: dmc
+
+  # ------------------------------------------
+  # Space-separated component image abbreviation list
+  # used to generate image tags and related variables.
+  # It is also passed to the downstream integration tests,
+  # publication and deployment pipeline
+  # ------------------------------------------
+  IMAGE_NAMES: "$DMC_IMAGE_NAME"
 
 stages:
-#  - quality
+  - variable-generation
+# TODO:  - quality
   - build
-  - tests
-  - deploy
-
-# Artifactory login command ---------
-
-.artifactory-login: &artifactory-login
-  - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY_HOST -u "$CI_REGISTRY_USER" --password-stdin
+  - security
+  - functional-tests
+  - integration-tests-publish-deploy
 
 # Quality jobs ----------------------
 
@@ -26,86 +42,49 @@ stages:
 # Build jobs ----------------------
 
 build-temp-dmc:
-  image: $DOCKER_IMAGE
   stage: build
-  services:
-    - $DOCKER_DIND_IMAGE
-  before_script:
-    - *artifactory-login
-  script:
-    - docker build -t $TMP_IMAGE .
-    - docker push $TMP_IMAGE
-  tags:
-    - docker
+  variables:
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+    DOCKERFILE_PATH: "."
+  trigger: !reference [.trigger-build]
 
-# Security job in tests stage------------------------
-
-.get-trivy: &get-trivy
-  - export TRIVY_VERSION=$(wget -qO - "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-  - wget --no-verbose https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz -O - | tar -zxvf -
+# Security job ------------------------
 
 security-trivy-dmc:
-  stage: tests
-  image: $DOCKER_IMAGE
-  services:
-    - name: $DOCKER_DIND_IMAGE
+  stage: security
   variables:
-    REPORT_FILENAME: ${COMPONENT_IMAGE_NAME}-container-scanning-report.json
-  before_script:
-    - *artifactory-login
-    - *get-trivy
-  allow_failure: true
-  script:
-    - ./trivy i -o $REPORT_FILENAME $TMP_IMAGE
-  artifacts:
-    reports:
-      container_scanning: $REPORT_FILENAME
-    expire_in: 1 hour
-  tags:
-    - docker
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+  trigger: !reference [.trigger-security-trivy]
+  needs:
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
 
-# Tests jobs ------------------------
+# functional tests job ------------------------
 
 run-functional-tests:
   image: $DOCKER_IMAGE
-  stage: tests
+  stage: functional-tests
   services:
     - $DOCKER_DIND_IMAGE
   variables:
     TESTS_CONTAINER_NAME: functional-tester
   before_script:
-    - *artifactory-login
+    - !reference [.artifactory-login]
   script:
     # Tests assume port 8080, while the Dockerfile CMD runs the server on port 80.
     # Thus, we need to override the command so that the server is run on port 8080.
-    - docker run --name $TESTS_CONTAINER_NAME -d -e "UVICORN_PORT=8080" $TMP_IMAGE
+    - docker run --name $TESTS_CONTAINER_NAME -d -e "UVICORN_PORT=8080" $TMP_IMAGE_DMC
     # Install everything required for the tests.
-    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "pip install -r dev-requirements.txt"
+    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c
+        "pip install -r dev-requirements.txt"
     # Run the tests.
     - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "python -m pytest"
     # Stop the tests container.
     - docker stop $TESTS_CONTAINER_NAME
-  tags:
-    - docker
-
-# Deploy job ------------------------
-
-deploy-dmc:
-  stage: deploy
-  image: $DOCKER_IMAGE
-  only:
-    - y1
-  services:
-    - $DOCKER_DIND_IMAGE
-  before_script:
-    - export VERSION=$(date +%Y%m%d)
-    - export TARGET_IMAGE_VERSIONED=${TARGET_IMAGE}-${VERSION}-${CI_PIPELINE_ID}
-    - *artifactory-login
-  script:
-    - docker pull $TMP_IMAGE
-    - docker tag $TMP_IMAGE $TARGET_IMAGE
-    - docker tag $TMP_IMAGE $TARGET_IMAGE_VERSIONED
-    - docker push $TARGET_IMAGE_VERSIONED
-    - docker push $TARGET_IMAGE
+  needs:
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
   tags:
     - docker
