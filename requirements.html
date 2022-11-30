@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Built-in Requirements &mdash; DOML Model Checker 2.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="REST APIs" href="restapis.html" />
+    <link rel="prev" title="Writing Requirements" href="writing-requirements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> DOML Model Checker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing-requirements.html">Writing Requirements</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Built-in Requirements</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#vm-network-interfaces">VM Network Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#concretization-of-software-interfaces">Concretization of Software Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#duplicated-interfaces">Duplicated Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deployed-software-components">Deployed Software Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#concretization-of-abstract-infrastructure">Concretization of Abstract Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#concrete-infrastructure-elements-have-a-maps-association">Concrete Infrastructure Elements have a maps Association</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#network-interfaces-belong-to-a-security-group">Network Interfaces belong to a Security Group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#external-services-are-reached-through-https">External Services are reached through HTTPS</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="restapis.html">REST APIs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DOML Model Checker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Built-in Requirements</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/requirements.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="built-in-requirements">
+<h1>Built-in Requirements<a class="headerlink" href="#built-in-requirements" title="Permalink to this heading"></a></h1>
+<p>The DOML Model Checker verifies DOML models against a collection of requirements
+devised to highlight the most common mistakes made by users when specifying cloud deployments.
+Here we list and describe such requirements.</p>
+<p>You may find examples of violations for each one of these requirements under the <code class="docutils literal notranslate"><span class="pre">tests/doml</span></code> directory.</p>
+<section id="vm-network-interfaces">
+<h2>VM Network Interfaces<a class="headerlink" href="#vm-network-interfaces" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All virtual machines must be connected to at least one network interface.</p>
+</div></blockquote>
+<p>Virtual machines can communicate with other components of a deployment or with external clients
+only through an appropriately configured network.
+this check makes sure no virtual machines are isolated.</p>
+</section>
+<section id="concretization-of-software-interfaces">
+<h2>Concretization of Software Interfaces<a class="headerlink" href="#concretization-of-software-interfaces" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All software packages can see the interfaces they need through a common network.</p>
+</div></blockquote>
+<p>This check makes sure all exposed and consumed software interfaces at the application layer level
+have been actually concretized through a network connection that allows the involved components
+to communicate.</p>
+</section>
+<section id="duplicated-interfaces">
+<h2>Duplicated Interfaces<a class="headerlink" href="#duplicated-interfaces" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>There are no duplicated interfaces.</p>
+</div></blockquote>
+<p>Checks whether two or more interfaces have been assigned the same IP address.</p>
+</section>
+<section id="deployed-software-components">
+<h2>Deployed Software Components<a class="headerlink" href="#deployed-software-components" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All software components have been deployed to some node.</p>
+</div></blockquote>
+<p>Makes sure that all software components specified in the application layer have been
+associated to at least one node in the abstract infrastructure layer
+through the currently active deployment.</p>
+</section>
+<section id="concretization-of-abstract-infrastructure">
+<h2>Concretization of Abstract Infrastructure<a class="headerlink" href="#concretization-of-abstract-infrastructure" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All abstract infrastructure elements are mapped to an element in the active concretization.</p>
+</div></blockquote>
+<p>Makes sure all abstract infrastructure nodes are concretized by the currently active concretization layer.</p>
+</section>
+<section id="concrete-infrastructure-elements-have-a-maps-association">
+<h2>Concrete Infrastructure Elements have a maps Association<a class="headerlink" href="#concrete-infrastructure-elements-have-a-maps-association" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All elements in the active concretization are mapped to some abstract infrastructure element.</p>
+</div></blockquote>
+<p>Makes sure each concrete infrastructure element is mapped to a node in the Abstract Infrastructure Layer.</p>
+</section>
+<section id="network-interfaces-belong-to-a-security-group">
+<h2>Network Interfaces belong to a Security Group<a class="headerlink" href="#network-interfaces-belong-to-a-security-group" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All network interfaces belong to a security group.</p>
+</div></blockquote>
+<p>Makes sure all network interfaces have been configured to belong to a security group.
+This way, the user will be reminded to configure adequate rules for each network.</p>
+</section>
+<section id="external-services-are-reached-through-https">
+<h2>External Services are reached through HTTPS<a class="headerlink" href="#external-services-are-reached-through-https" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><p>All external SaaS can be reached only through a secure connection.</p>
+</div></blockquote>
+<p>Makes sure that an HTTPS rule is enforced for a Network Interface of a Software Component that interfaces with a SaaS.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="writing-requirements.html" class="btn btn-neutral float-left" title="Writing Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="restapis.html" class="btn btn-neutral float-right" title="REST APIs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Michele Chiari, Michele De Pascalis, Andrea Franchini.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; DOML Model Checker 2.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Writing Requirements" href="writing-requirements.html" />
+    <link rel="prev" title="Testing" href="tests.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> DOML Model Checker
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">Testing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#through-the-piacere-ide">Through the PIACERE IDE</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#settings">Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#through-the-command-line-interface">Through the Command Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#options">Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="writing-requirements.html">Writing Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Built-in Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restapis.html">REST APIs</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DOML Model Checker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
+<section id="through-the-piacere-ide">
+<h2>Through the PIACERE IDE<a class="headerlink" href="#through-the-piacere-ide" title="Permalink to this heading"></a></h2>
+<p>The DOML Model Checker is usually invoked from the PIACERE IDE.
+It expects a DOML file in XMI format as its input,
+so plain DOML files must be manually converted.
+The workflow is as follows:</p>
+<ol class="arabic simple">
+<li><p>Right-click the DOML file to be checked in the IDE’s left sidebar;</p></li>
+<li><p>In the context-menu, select <em>Piacere</em> -&gt; <em>Generate DOMLX Model</em>;</p></li>
+<li><p>Pick a name for the .domlx file to be generated and click OK;</p></li>
+<li><p>Right-click the newly-generated .domlx file;</p></li>
+<li><p>In the context-menu, select <em>Piacere</em> -&gt; <em>Validate DOML</em>.</p></li>
+</ol>
+<p>After some time, the IDE will report the model checker’s results in a new window.</p>
+<p>Normally, verification can have two outcomes:</p>
+<ul class="simple">
+<li><p><em>Your requirements are SATISFIED</em>:
+this means your DOML model passed all the standard checks for common mistakes;</p></li>
+<li><p><em>Your requirements are UNSATISFIED</em>:
+this means the model checker has found a problem in your DOML model.
+A description of the problem follows.</p></li>
+</ul>
+<p>In case of errors in the verification process, the IDE reports them in a new window,
+together with a description.
+A common error is the following:</p>
+<blockquote>
+<div><p>The supplied DOMLX model is malformed or its DOML version is unsupported.</p>
+</div></blockquote>
+<p>This often happens because of a mismatch between the DOML version supported by the IDE
+and the one supported by the model checker.</p>
+<section id="settings">
+<h3>Settings<a class="headerlink" href="#settings" title="Permalink to this heading"></a></h3>
+<p>The only model-checker-related settings you may customize from the PIACERE IDE
+are the endpoint connection data.</p>
+<p>Select the <em>Preferences</em> entry of the <em>Window</em> menu of the PIACERE IDE,
+and then choose <em>Piacere</em> -&gt; <em>Model Checker Preferences</em>.</p>
+<p>Here you may enter the endpoint address and port, which is useful in case you want to
+run the DOML Model Checker locally, instead of using the official deployment.</p>
+</section>
+</section>
+<section id="through-the-command-line-interface">
+<h2>Through the Command Line Interface<a class="headerlink" href="#through-the-command-line-interface" title="Permalink to this heading"></a></h2>
+<p>Another way to use the model checker is through the CLI.
+It provides additional options that are not available in the IDE at
+the moment, such as support for a separate user requirement file
+and synthesis of DOMLX.</p>
+<p>You can run it with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">mc_openapi</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To display all the available flags, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">mc_openapi</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<section id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this heading"></a></h3>
+<p>Please note that not all flags work with eachother. In most cases, some won’t have
+any effect in certain CLI flags combinations.</p>
+<p>There are <strong>3 Modes</strong> in which the CLI can run:</p>
+<ul class="simple">
+<li><p>REST API (<strong>R</strong>)</p></li>
+<li><p>Model Checker (<strong>C</strong>)</p></li>
+<li><p>Model Synthesis (<strong>S</strong>)</p></li>
+</ul>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 18%" />
+<col style="width: 6%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Flags</p></th>
+<th class="head"><p>Mode</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Short</p></th>
+<th class="head"><p>Long</p></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-h</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--help</span></code></p></td>
+<td><p>C, S, T</p></td>
+<td><p>Prints the all the available flags with an explanation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--port</span></code></p></td>
+<td><p>R</p></td>
+<td><p>The port that will expose the REST API (default: 8080)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--doml</span></code></p></td>
+<td><p>C, S</p></td>
+<td><p>The DOMLX file to check with the model checker</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-V</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--doml-version</span></code></p></td>
+<td><p>C, S</p></td>
+<td><p>The DOML version in which the DOMLX file is written in</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-r</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--requirements</span></code></p></td>
+<td><p>C, S</p></td>
+<td><p>A text file containing the user-defined requirements written in <a class="reference internal" href="writing-requirements.html"><span class="doc">DOMLR</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-S</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--skip-common-checks</span></code></p></td>
+<td><p>C</p></td>
+<td><p>Skips <a class="reference internal" href="requirements.html"><span class="doc">build-in requirements</span></a> checks</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-c</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--check-consistency</span></code></p></td>
+<td><p>C</p></td>
+<td><p>Perform additional consistency checks (legacy)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-t</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--threads</span></code></p></td>
+<td><p>C, S, T</p></td>
+<td><p>The number of threads used by the model checker (default: 2)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--synth</span></code></p></td>
+<td><p>S</p></td>
+<td><p>Synthetize a new DOMLX file from requirements</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-m</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--max-tries</span></code></p></td>
+<td><p>S</p></td>
+<td><p>Max number of tries to solve a model during synthesis (default: 10)</p></td>
+</tr>
+</tbody>
+</table>
+<p><em>If you do not provide the ``–doml`` option or the ``–synth`` option it will start the web server hosting the REST API!</em></p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h3>
+<p>To check a DOMLX file with user-provided custom requirements, you may run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">mc_openapi</span> <span class="o">-</span><span class="n">d</span> <span class="o">./</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">myModel</span><span class="o">.</span><span class="n">domlx</span> <span class="o">-</span><span class="n">r</span> <span class="o">./</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">myRequirements</span><span class="o">.</span><span class="n">domlr</span> <span class="o">-</span><span class="n">V</span> <span class="n">V2_0</span>
+</pre></div>
+</div>
+<p>To synthetize a new DOMLX file with 4 threads and a maximum of 15 tries, you may run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">mc_openapi</span> <span class="o">-</span><span class="n">d</span> <span class="o">./</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">myModel</span><span class="o">.</span><span class="n">domlx</span> <span class="o">--</span><span class="n">synth</span> <span class="o">-</span><span class="n">t</span> <span class="mi">4</span> <span class="o">-</span><span class="n">m</span> <span class="mi">15</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tests.html" class="btn btn-neutral float-left" title="Testing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="writing-requirements.html" class="btn btn-neutral float-right" title="Writing Requirements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Michele Chiari, Michele De Pascalis, Andrea Franchini.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
