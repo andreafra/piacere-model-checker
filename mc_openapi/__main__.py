@@ -114,9 +114,9 @@ else:
             printv("\n".join([synth.pretty_ub_vals_attr(attr) for attr in attrs_to_implement]))
 
             # Implement results
-            eobj = get_pyecore_model(doml_xmi, doml_ver)
-            eobj = generate_xmi(eobj, assoc_to_implement, dmc.intermediate_model, doml_ver)
-            serialize_pyecore_model(eobj)
+            # eobj = get_pyecore_model(doml_xmi, doml_ver)
+            # eobj = generate_xmi(eobj, assoc_to_implement, dmc.intermediate_model, doml_ver)
+            # serialize_pyecore_model(eobj)
             
         except Exception as e:
             print(e)

@@ -185,12 +185,15 @@ def get_mangled_association_name(
 def get_mangled_attribute_defaults(
     mm: MetaModel,
     cname: str,
-) -> dict[str, list[Union[str, int, bool]]]:
+) -> dict[str, list[tuple[Union[str, int, bool], str, tuple[str, str]]]]:
+    """`cname` is string like this: `<package>_<class>`, 
+       such as `application_SoftwareComponent`.
+    """
     c = mm[cname]
     defaults = {
-        f"{cname}::{aname}": a.default
+        f"{cname}::{aname}": (a.default, a.type, a.multiplicity)
         for aname, a in c.attributes.items()
-        if a.default is not None
+        # if a.default is not None
     }
     if c.superclass is None:
         return defaults

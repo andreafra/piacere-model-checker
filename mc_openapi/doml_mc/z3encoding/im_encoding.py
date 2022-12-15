@@ -1,4 +1,5 @@
 from itertools import product
+import re
 from typing import Union
 
 from z3 import (And, BoolSort, Const, Context, Datatype, DatatypeRef,
@@ -58,33 +59,72 @@ def assert_im_attributes(
     This procedure is effectful on `solver`.
     """
 
-    def encode_attr_data(v: Union[str, int, bool]) -> DatatypeRef:
-        if type(v) is str:
-            return attr_data_sort.str(strings[v])  # type: ignore
-        elif type(v) is int:
-            return attr_data_sort.int(v)  # type: ignore
+    def encode_attr_data(value: Union[str, int, bool]) -> DatatypeRef:
+        if type(value) is str:
+            return attr_data_sort.str(strings[value])  # type: ignore
+        elif type(value) is int:
+            return attr_data_sort.int(value)  # type: ignore
+            # return value
         else:  # type(v) is bool
-            return attr_data_sort.bool(v)  # type: ignore
+            return attr_data_sort.bool(value)  # type: ignore
+    
+    def add_type_to_attrs(mm: MetaModel, attrs: dict):
+        ret = {}
+        for attr_k, attr_v in attrs.items():
+            mm_pkgclass_k, mm_attr_k = re.search("^(.+?)::(.+?)$", attr_k).group(1, 2)
+            mm_attrs = mm[mm_pkgclass_k].attributes
+            mm_attr = mm_attrs[mm_attr_k]
+            ret[attr_k] = attr_v, mm_attr.type, mm_attr.multiplicity
+        return ret
 
     a = Const("a", attr_sort)
     d = Const("d", attr_data_sort)
+
+
     for esn, im_es in im.items():
-        attr_data = get_mangled_attribute_defaults(mm, im_es.class_) | im_es.attributes
+        # print(f"== {im[esn].user_friendly_name} ==")
+        # print("MM_attrs_default:\n", get_mangled_attribute_defaults(mm, im_es.class_))
+        # print("IM_attrs:\n", add_type_to_attrs(mm, im_es.attributes))
+        mm_attrs = get_mangled_attribute_defaults(mm, im_es.class_)
+        im_attrs = add_type_to_attrs(mm, im_es.attributes)
+        attr_data = mm_attrs | im_attrs
+        # print("attr_data:\n", attr_data)
+
+        # ==== DEBUG ====
+        # Remove commons_DOMLElement::description since
+        # it's polluting printed results
+        try:
+            attr_data.pop("commons_DOMLElement::description")
+        except:
+            pass
+        # ===============
+
+        # Create list of `And` assertions that will go in the `Or` below
+        assn_list = []
+        for attr_k, (attr_values, attr_type, attr_mult) in attr_data.items():
+            if attr_values is not None:
+                for attr_value in attr_values:
+                    assn_list.append(
+                        And(
+                            a == attrs[attr_k],
+                            d == encode_attr_data(attr_value)
+                        )
+                    )
+            else:
+                # Add a placeholder value
+                assn_list.append(
+                    And(
+                        a == attrs[attr_k],
+                        d == attr_data_sort.placeholder
+                    )
+                )
+        
         if attr_data:
             assn = ForAll(
                 [a, d],
                 Iff(
                     attr_rel(elems[esn], a, d),
-                    Or(
-                        *(
-                            And(
-                                a == attrs[aname],
-                                d == encode_attr_data(avalue)
-                            )
-                            for aname, avalues in attr_data.items()
-                            for avalue in avalues
-                        )
-                    ),
+                    Or(*assn_list),
                 ),
             )
         else:
@@ -92,6 +132,7 @@ def assert_im_attributes(
                 [a, d],
                 Not(attr_rel(elems[esn], a, d))
             )
+        # print(assn)
         solver.assert_and_track(assn, f"attribute_values {esn}")
 
 def assert_im_associations(
@@ -108,22 +149,22 @@ def assert_im_associations(
     """
 
     assoc_ref = Const("a", assoc_sort)
-    for (elem_1_k, elem_1_v), elem_2_k in product(im.items(), im):
+    for (elem_1_k, elem_1_v), elem_2 in product(im.items(), im):
         assn = ForAll(
             [assoc_ref],
             Iff(
-                assoc_rel(elem[elem_1_k], assoc_ref, elem[elem_2_k]),
+                assoc_rel(elem[elem_1_k], assoc_ref, elem[elem_2]),
                 Or(
                     *(
                         assoc_ref == assoc[elem_1_assoc_k]
                         for elem_1_assoc_k, elem_1_assoc_elems_k in elem_1_v.associations.items()
-                        if elem_2_k in elem_1_assoc_elems_k
+                        if elem_2 in elem_1_assoc_elems_k
                     ),
                     solver.ctx
                 ),
             ),
         )
-        solver.assert_and_track(assn, f"associations {elem_1_k} {elem_2_k}")
+        solver.assert_and_track(assn, f"associations {elem_1_k} {elem_2}")
 
 
 def mk_stringsym_sort_dict(
