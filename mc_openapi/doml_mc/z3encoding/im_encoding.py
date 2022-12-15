@@ -64,7 +64,6 @@ def assert_im_attributes(
             return attr_data_sort.str(strings[value])  # type: ignore
         elif type(value) is int:
             return attr_data_sort.int(value)  # type: ignore
-            # return value
         else:  # type(v) is bool
             return attr_data_sort.bool(value)  # type: ignore
     
@@ -112,12 +111,29 @@ def assert_im_attributes(
                     )
             else:
                 # Add a placeholder value
-                assn_list.append(
-                    And(
-                        a == attrs[attr_k],
-                        d == attr_data_sort.placeholder
-                    )
-                )
+                match attr_type:
+                    case "String":
+                        assn_list.append(
+                            And(
+                                a == attrs[attr_k],
+                                d == attr_data_sort.placeholder_str
+                            )
+                        )
+                    case "Boolean":
+                        assn_list.append(
+                            And(
+                                a == attrs[attr_k],
+                                d == attr_data_sort.placeholder_bool
+                            )
+                        )
+                    case "Integer":
+                        assn_list.append(
+                            And(
+                                a == attrs[attr_k],
+                                d == attr_data_sort.placeholder_int
+                            )
+                        )
+               
         
         if attr_data:
             assn = ForAll(
@@ -204,7 +220,9 @@ def mk_attr_data_sort(
     z3ctx: Context
 ) -> DatatypeSortRef:
     attr_data = Datatype("AttributeData", ctx=z3ctx)
-    attr_data.declare("placeholder")
+    attr_data.declare("placeholder_int")
+    attr_data.declare("placeholder_bool")
+    attr_data.declare("placeholder_str")
     attr_data.declare("int", ("get_int", IntSort(ctx=z3ctx)))
     attr_data.declare("bool", ("get_bool", BoolSort(ctx=z3ctx)))
     attr_data.declare("str", ("get_str", str_sort)) # str_sort is the one returned by the function above
