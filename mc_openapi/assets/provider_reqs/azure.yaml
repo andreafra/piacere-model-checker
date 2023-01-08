@@ -1,0 +1,68 @@
+architecture:
+  - x86
+cpu_count:
+  min: 1
+  max: 416
+memory_mb:
+  min: 0
+  max: 12240657 # 11400 GiB
+os:
+# Source https://azure.microsoft.com/en-us/pricing/vm-selector/
+- CentOS
+- Red Hat Enterprise Linux
+- Red Hat Enterprise Linux with HA
+- RHEL for SAP Business Applications
+- RHEL for SAP with HA
+- SQL Server Red Hat Enterprise Linux
+- SQL Server SUSE Priority
+- SQL Server Ubuntu Linux
+- SQL Server Ubuntu Pro
+- SUSE Linux Enterprise
+- SUSE Linux Enterprise for HPC
+- SUSE Linux Enterprise for SAP Applications + 24x7 Support
+- Ubuntu
+- Ubuntu Advantage
+- Windows
+- Windows SQL Server
+- Windows BizTalk
+regions:
+# Source: az account list-locations -o table
+# Can't run it myself right now
+- eastasia
+- southeastasia
+- centralus
+- eastus
+- eastus2
+- westus
+- northcentralus
+- southcentralus
+- northeurope
+- westeurope
+- japanwest
+- japaneast
+- brazilsouth
+- australiaeast
+- australiasoutheast
+- southindia
+- centralindia
+- westindia
+- canadacentral
+- canadaeast
+- uksouth
+- ukwest
+- westcentralus
+- westus2
+- koreacentral
+- koreasouth
+- francecentral
+- francesouth
+- australiacentral
+- australiacentral2
+- uaecentral
+- uaenorth
+- southafricanorth
+- southafricawest
+keypairs:
+# Source: https://learn.microsoft.com/en-us/azure/virtual-machines/linux/create-ssh-keys-detailed
+- algorithm: SSH-2 RSA
+  bits: 2048
