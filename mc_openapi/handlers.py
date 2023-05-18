@@ -28,8 +28,12 @@ def post(body, version=None):
         if version:
             doml_version: str = version
         if doml_version:
-            doml_version = DOMLVersion.get(doml_version)
-            logging.info(f"Forcing DOML {doml_version.value}")
+            try:
+                doml_version = DOMLVersion.get(doml_version)
+                logging.info(f"Forcing DOML {doml_version.value}")
+            except:
+                supported_versions = ', '.join(DOMLVersion.getAllSupportedVersions())
+                logging.error(f"This DOML version ({doml_version}) doesn't exists. Supported version are: {supported_versions}")
 
         dmc = ModelChecker(doml_xmi, doml_version)
 
@@ -39,6 +43,7 @@ def post(body, version=None):
         # Add support for Requirements in DOML
         if (dmc.doml_version == DOMLVersion.V2_2 
         or  dmc.doml_version == DOMLVersion.V2_2_1
+        or  dmc.doml_version == DOMLVersion.V2_3b
         or  dmc.doml_version == DOMLVersion.V2_3):
             domlr_parser = Parser(DOMLRTransformer)
             model = get_pyecore_model(doml_xmi, dmc.doml_version)

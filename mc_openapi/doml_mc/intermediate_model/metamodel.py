@@ -16,15 +16,21 @@ class DOMLVersion(Enum):
     V2_2 = "v2.2"
     V2_2_1 = "v2.2.1"
     V2_3 = "v2.3"
+    V2_3b = "v2.3b"
 
     def get(v: str):
         """Retrieve DOML version from string.
         Try to be less pedantic about versions
         e.g.: 2.0 becomes V2_0"""
-        doml_ver = v.replace(".", "_")
+        doml_ver = v.replace(".", "_").lower()
+        doml_ver = doml_ver.replace("v", "V")
         if doml_ver[0] != "V":
             doml_ver = "V" + doml_ver
         return DOMLVersion[doml_ver]
+    
+    def getAllSupportedVersions():
+        # Get [v2.0, v2.1, ...]
+        return list(map(lambda x: x.value, DOMLVersion._member_map_.values()))
 
 
 Multiplicity = tuple[Literal["0", "1"], Literal["1", "*"]]

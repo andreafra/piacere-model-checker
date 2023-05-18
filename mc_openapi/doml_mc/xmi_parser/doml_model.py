@@ -94,7 +94,8 @@ def parse_doml_model(raw_model: bytes, doml_version: Optional[DOMLVersion]) -> T
     else: # if user specifies DOML version, respect that choice!
         try:
             model = parse_xmi_model(raw_model, doml_version)
-        except:
+        except Exception as e:
+            logging.error(f"Failed to parse DOML: {e}")
             raise Exception("Parsing of DOML failed. Perhaps you are using the wrong DOML version or IDE?")
 
     logging.info(f"Model '{model.name}' parsed as DOML {doml_version.value}")
