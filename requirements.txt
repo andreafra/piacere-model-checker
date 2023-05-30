@@ -9,3 +9,6 @@ pyecore
 piacere-doml-synthesis
 lark
 uvicorn
+pytest
+pytest-xdist
+pytest-subtests
