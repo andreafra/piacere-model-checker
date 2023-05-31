@@ -163,11 +163,12 @@ class IntermediateModelChecker:
                 req.assert_name
             )
             res = self.solver.check()
-            req_src, req_fn = req.error_description
+            req_type, req_err_desc_fn = req.error_description
+            req_is_sat = MCResult.from_z3result(res, flipped=req.flipped)
             results.append((
-                MCResult.from_z3result(res, flipped=req.flipped),
-                req_src,
-                req_fn(self.solver, self.smt_sorts, self.intermediate_model)
+                req_is_sat,
+                req_type,
+                req_err_desc_fn(self.solver, self.smt_sorts, self.intermediate_model) if req_is_sat else ""
                 # if res == sat else "" # not needed since we're try/catching model() errors
                 # in each requirement now
             ))

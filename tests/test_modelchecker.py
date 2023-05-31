@@ -19,16 +19,17 @@ def test_domlx_models_by_version(subtests):
             with open(domlx, "rb") as f:
                 domlx_file = f.read()
                 assert_ver = DOMLVersion.get(doml_ver)
-                res = run(domlx_file, assert_ver)
+                assert_result = None
                 try:
                     assert_result = OUTPUT[doml_ver][domlx.name]
                     i += 1
                 except:
                     pass
-            if assert_result:
-                with subtests.test(msg=f"{doml_ver}/{domlx.name}", i=i):
-                        assert assert_result == res['result'].name
-                        assert assert_ver.name == res['doml_version']
+                if assert_result:
+                    with subtests.test(msg=f"{doml_ver}/{domlx.name}", i=i):
+                            res = run(domlx_file, assert_ver)
+                            assert assert_result == res['result'].name
+                            assert assert_ver.name == res['doml_version']
 
 OUTPUT = {
     'v2.0': {
