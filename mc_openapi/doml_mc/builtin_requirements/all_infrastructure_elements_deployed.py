@@ -45,8 +45,28 @@ def all_infrastructure_elements_deployed(smtenc: SMTEncoding, smtsorts: SMTSorts
                     ielemClass, providerAssoc, celemAssoc
                 ) 
                 for ielemClass, providerAssoc, celemAssoc in CELEMS_V2_0
-                if ielemClass != 'infrastructure_VirtualMachine' # handle special case separately below
+                if ielemClass != 'infrastructure_VirtualMachine' # handle special case separately in concrete_asg_no_vm and below
             ),
+            And(
+                smtenc.element_class_fun(ielem) == smtenc.classes["infrastructure_VirtualMachine"],
+                Not(Exists([asg],
+                    Or(
+                        smtenc.association_rel(
+                            asg, smtenc.associations["infrastructure_AutoScalingGroup::machineDefinition"], ielem),
+                        Exists(
+                            [provider, celem],
+                            And(
+                                smtenc.association_rel(
+                                    concr, smtenc.associations["concrete_ConcreteInfrastructure::providers"], provider),
+                                smtenc.association_rel(
+                                    provider, smtenc.associations["concrete_RuntimeProvider::vms"], celem),
+                                smtenc.association_rel(
+                                    celem, smtenc.associations["concrete_VirtualMachine::maps"], ielem)
+                            )
+                        )
+                    )
+                ))
+            )
         )
     )
 

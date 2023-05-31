@@ -73,6 +73,7 @@ ID: ``all_concrete_map_something``
 
 Makes sure each concrete infrastructure element is mapped to a node in the Abstract Infrastructure Layer.
 
+
 Network Interfaces belong to a Security Group
 ---------------------------------------------
 
@@ -83,11 +84,26 @@ ID: ``security_group_must_have_iface``
 Makes sure all network interfaces have been configured to belong to a security group.
 This way, the user will be reminded to configure adequate rules for each network.
 
-External Services are reached through HTTPS
--------------------------------------------
 
-  All external SaaS can be reached only through a secure connection.
+Virtual Machines in AutoScaleGroup should not be present in Concretization
+--------------------------------------------------------------------------
 
-ID: ``external_services_must_have_https``
+ID: ``concrete_asg_no_vm``
 
-Makes sure that an HTTPS rule is enforced for a Network Interface of a Software Component that interfaces with a SaaS.
+*Available from DOML v2.2+*
+
+Makes sure a VM present inside an AutoScaleGroup in the Infrastructure Layer is not present
+and mapped in the Concretization layer.
+
+
+.. Deprecated
+
+.. External Services are reached through HTTPS
+.. -------------------------------------------
+
+..   All external SaaS can be reached only through a secure connection.
+
+.. ID: ``external_services_must_have_https``
+
+.. Makes sure that an HTTPS rule is enforced for a Network Interface of a Software Component that interfaces with a SaaS.
+

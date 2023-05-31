@@ -56,13 +56,13 @@ OUTPUT = {
     'v2.2': {
         'faas.domlx': 'unsat',
         'iot_simple_app.domlx': 'unsat',
-        'nginx-aws-ec2.domlx': 'sat',
+        'nginx-aws-ec2.domlx': 'unsat', # was sat before concrete_asg_no_vm req
         'nginx_func_req2_unsat.domlx': 'unsat',
         'nginx_func_req2_unsat_neg.domlx': 'unsat',
-        'nginx_func_req_neg.domlx': 'sat',
-        'nginx-csp-compatibility-test.domlx': 'sat',
-        'nginx_func_req.domlx': 'sat',
-        'nginx_flags.domlx': 'sat'
+        'nginx_func_req_neg.domlx': 'unsat', # ditto
+        'nginx-csp-compatibility-test.domlx': 'unsat', # ditto
+        'nginx_func_req.domlx': 'unsat', # ditto
+        'nginx_flags.domlx': 'unsat' # ditto
     },
     'v2.3': {
 

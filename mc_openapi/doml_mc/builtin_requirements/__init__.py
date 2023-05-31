@@ -4,7 +4,7 @@ CELEMS_V2_0 = [
     ("infrastructure_Network", "concrete_RuntimeProvider::networks", "concrete_Network::maps"),
     ("infrastructure_Storage", "concrete_RuntimeProvider::storages", "concrete_Storage::maps"),
     ("infrastructure_FunctionAsAService", "concrete_RuntimeProvider::faas","concrete_FunctionAsAService::maps"),
-    ("infrastructure_ComputingGroup", "concrete_RuntimeProvider::group","concrete_ComputingGroup::maps")
+    ("infrastructure_ComputingGroup", "concrete_RuntimeProvider::group","concrete_ComputingGroup::maps"),
 ]
 
 from .vm_has_iface import VM_HAS_IFACE, VM_HAS_IFACE_V2_3
@@ -14,6 +14,7 @@ from .all_software_components_deployed import ALL_SOFTWARE_COMPONENTS_DEPLOYED
 from .all_infrastructure_elements_deployed import ALL_INFRASTRUCTURE_ELEMENTS_DEPLOYED
 from .all_concrete_maps_something import ALL_CONCRETE_MAP_SOMETHING
 from .security_group_must_have_iface import SECURITY_GROUP_MUST_HAVE_IFACE
+from .concrete_asg_no_vm import CONCRETE_ASG_NO_VM
 
 __ALL__ = [
     VM_HAS_IFACE,
@@ -25,5 +26,6 @@ __ALL__ = [
     ALL_SOFTWARE_COMPONENTS_DEPLOYED,
     ALL_INFRASTRUCTURE_ELEMENTS_DEPLOYED,
     ALL_CONCRETE_MAP_SOMETHING,
-    SECURITY_GROUP_MUST_HAVE_IFACE
+    SECURITY_GROUP_MUST_HAVE_IFACE,
+    CONCRETE_ASG_NO_VM
 ]
