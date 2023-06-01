@@ -95,6 +95,12 @@ ID: ``concrete_asg_no_vm``
 Makes sure a VM present inside an AutoScaleGroup in the Infrastructure Layer is not present
 and mapped in the Concretization layer.
 
+Virtual Machines that host a container need an OS
+-------------------------------------------------
+
+*Available from DOML v2.2+*
+
+Makes sure a VM hosting a container has the OS field present.
 
 .. Deprecated
 

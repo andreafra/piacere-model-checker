@@ -15,6 +15,7 @@ from .all_infrastructure_elements_deployed import ALL_INFRASTRUCTURE_ELEMENTS_DE
 from .all_concrete_maps_something import ALL_CONCRETE_MAP_SOMETHING
 from .security_group_must_have_iface import SECURITY_GROUP_MUST_HAVE_IFACE
 from .concrete_asg_no_vm import CONCRETE_ASG_NO_VM
+from .vm_os_required import VM_OS_REQUIRED
 
 __ALL__ = [
     VM_HAS_IFACE,
@@ -27,5 +28,6 @@ __ALL__ = [
     ALL_INFRASTRUCTURE_ELEMENTS_DEPLOYED,
     ALL_CONCRETE_MAP_SOMETHING,
     SECURITY_GROUP_MUST_HAVE_IFACE,
-    CONCRETE_ASG_NO_VM
+    CONCRETE_ASG_NO_VM,
+    VM_OS_REQUIRED
 ]
