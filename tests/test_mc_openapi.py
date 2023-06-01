@@ -57,7 +57,7 @@ def test_post_nginx_sat_V2_1():
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
-    assert payload["result"] == "sat"
+    assert payload["result"] == "unsat" # it was sat before req change
 
 
 def test_post_faas_unsat_V2_1():
@@ -101,4 +101,4 @@ def test_post_nginx_with_func_reqs_unsat_V2_2():
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
-    assert payload["result"] == "sat"
+    assert payload["result"] == "unsat" # it was sat before req change
