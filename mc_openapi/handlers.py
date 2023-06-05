@@ -43,6 +43,7 @@ def mc(body, version, isHtml = False):
         res['result'] = res['result'].name
         
         if isHtml:
+            res |= res.get('csp', {})
             return render_template('mc.html.jinja', **res).replace('\n', '')
         else:
             return res

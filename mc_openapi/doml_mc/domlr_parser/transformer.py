@@ -32,7 +32,9 @@ class DOMLRTransformer(Transformer):
     # start
     def start(self, args) -> tuple[list[Requirement], dict[str, str]]:
         if not isinstance(args[0], dict): # there aren't flags
-            args = [{}, args[0]]
+            return args[0], {}
+        elif len(args) == 1 and isinstance(args[0], dict): # There are just the flags
+            return [], args[0]
         return args[1], args[0]
     
     def flags(self, args) -> dict:

@@ -32,6 +32,17 @@ parser.add_argument("-m", "--max-tries", dest="tries", type=int, default=8, help
 
 args = parser.parse_args()
 
+def print_csp_results(results):
+    for csp_k, csp_v in results.items():
+                # Format items in minreq
+        if csp_k == 'minreq':
+            for row in csp_v:
+                for index, col in enumerate(row):
+                    if index > 0 and isinstance(col, list):
+                        row[index] = "\n".join(col)
+
+        print(tabulate(csp_v, headers='firstrow', tablefmt='fancy_grid'))
+
 if not args.doml and not args.synth:
     dictConfig({
         'version': 1,
@@ -92,15 +103,7 @@ else:
         # Check CSP Compatibility
         if args.csp:
             csp = verify_csp_compatibility(dmc)
-            for csp_k, csp_v in csp.items():
-                # Format items in minreq
-                if csp_k == 'minreq':
-                    for row in csp_v:
-                        for index, col in enumerate(row):
-                            if index > 0 and isinstance(col, list):
-                                row[index] = "\n".join(col)
-
-                print(tabulate(csp_v, headers='firstrow', tablefmt='fancy_grid'))
+            print_csp_results(csp)
         else:
             res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
 
@@ -111,6 +114,12 @@ else:
                 print(res['result'])
                 print("[ERRORS]")
                 print("\033[91m{}\033[00m".format(res['description']))
+            
+            csp_res = res.get('csp')
+            if csp_res:
+                print("[CSP COMPATIBILITY RESULTS]")
+                print_csp_results(csp_res)
+
 
 
     else: # Synthesis

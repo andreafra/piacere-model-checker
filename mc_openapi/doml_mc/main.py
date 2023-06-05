@@ -78,10 +78,6 @@ def verify_model(
     # Log all requirements to check
     logging.debug("Checking following requirements: " + ", ".join([k.assert_name for k in req_store.get_all_requirements()]))
 
-    # Check CSP
-    if flags.get('_csp', False):
-        logging.warning("The CSP compatibility check is not yet implemented via DOMLR")
-
     # Check satisfiability
     results = dmc.check_requirements(
         req_store,
@@ -95,6 +91,10 @@ def verify_model(
     res['doml_version'] = dmc.doml_version.name
 
     logging.info(res)
+
+    # Check CSP
+    if flags.get('_csp', False):
+        res['csp'] = verify_csp_compatibility(dmc)
 
     return res
 

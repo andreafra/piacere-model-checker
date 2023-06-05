@@ -6,7 +6,7 @@
 /* spacing */
 
 table {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
     border-collapse: collapse;
     border: 1px solid black;
@@ -17,6 +17,7 @@ td {
     padding: 0.5em;
     border: 1px solid black;
     text-align: left;
+    min-width: max-content;
 }
 
 th {
@@ -31,6 +32,7 @@ ul {
     padding: 0;
     margin: 0;
     list-style: none;
+    max-width: 100vw;
 }
 
 .req-errs {
