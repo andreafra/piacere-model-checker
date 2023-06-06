@@ -1,15 +1,19 @@
 import logging
 import os
 import traceback
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from importlib.resources import files
+
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from importlib.resources import files
+from fastapi.encoders import jsonable_encoder
+
 import mc_openapi.assets as ASSETS
+from mc_openapi.doml_mc import (init_model, verify_csp_compatibility,
+                                verify_model)
 from mc_openapi.doml_mc.exceptions import *
 from mc_openapi.doml_mc.intermediate_model.metamodel import DOMLVersion
-from mc_openapi.doml_mc import init_model, verify_csp_compatibility, verify_model
 from mc_openapi.doml_mc.mc import ModelChecker
 
 assets = files(ASSETS)
@@ -46,12 +50,23 @@ def handleDOMLX(doml_xmi: bytes, callback) -> dict:
         MissingInfrastructureLayerException,
         NoActiveConcreteLayerException
     ) as e:
-        raise HTTPException(status_code=400, detail=e.errors)
-    except RuntimeError as e:
-        raise HTTPException(status_code=500, detail="An error has occurred.\n" + traceback.format_exc())
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="An error has occurred.\n" + traceback.format_exc())
-
+        return JSONResponse(
+            status_code=400,
+            content=jsonable_encoder({
+                "message": e.errors,
+                "debug_message": traceback.format_exc()
+            })
+        )
+    except (RuntimeError, Exception) as e:
+        logging.error(traceback.format_exc())
+        return JSONResponse(
+            status_code=400,
+            content=jsonable_encoder({
+                "message": "An error has occurred. It could be an error within your DOML file. If it persist, try specifying DOML version manually.",
+                "debug_message": traceback.format_exc()
+            })
+        )
+        
 
 @app.post("/modelcheck")
 async def mc(request: Request):
