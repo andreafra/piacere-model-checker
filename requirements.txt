@@ -7,7 +7,7 @@ lxml
 pyecore
 piacere-doml-synthesis
 lark
-uvicorn
+uvicorn[standard]
 pytest
 pytest-xdist
 pytest-subtests
