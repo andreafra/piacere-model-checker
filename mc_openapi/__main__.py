@@ -5,8 +5,9 @@ from logging.config import dictConfig
 import re
 
 from tabulate import tabulate
+import uvicorn
 
-from mc_openapi.app_config import app
+from mc_openapi.fastapi import app
 from mc_openapi.doml_mc import DOMLVersion, init_model, verify_csp_compatibility, verify_model, synthesize_model
 from mc_openapi.doml_mc.domlr_parser.exceptions import RequirementException
 from mc_openapi.doml_mc.mc_result import MCResult
@@ -62,7 +63,8 @@ if not args.doml and not args.synth:
     logging.info(f"DOML Model Checker v{__version__}")
 
     # Start the webserver
-    app.run(port=args.port)
+    uvicorn.run(app, port=args.port)
+    # No actions allowed after uvicorn startup point
 else:
     logging.basicConfig(level=logging.DEBUG, format='* %(message)s')
     logging.info(f"DOML Model Checker v{__version__}")

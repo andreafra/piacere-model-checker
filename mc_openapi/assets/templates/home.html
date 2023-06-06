@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="box">
+    <h1 class="title">DOML Model Checker</h1>
+    <p>Upload a DOMLX file (in PIACERE IDE, <i>Right click > PIACERE > Generate DOMLX</i>) to either validate it with
+        the
+        model checker or the CSP compatibility tool.</p>
+    <br>
+    <div class="columns">
+        <div class="column">
+            <h2 class="subtitle">Model Checker</h2>
+            <div class="file is-boxed">
+                <label class="file-label">
+                    <input class="file-input" type="file" name="resume" id="domlx-mc">
+                    <span class="file-cta">
+                        <span class="file-label">
+                            Choose a file to validate
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </div>
+        <div class="column">
+            <h2 class="subtitle">CSP Compatibility</h2>
+            <div class="file is-boxed">
+                <label class="file-label">
+                    <input class="file-input" type="file" name="resume" id="domlx-csp">
+                    <span class="file-cta">
+                        <span class="file-label">
+                            Choose a file to validate
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <progress id="loading" class="is-hidden progress is-small is-primary" max="100">Loading...</progress>
+    <div id="error" class="notification is-danger is-hidden">
+        There was an issue with the file you uploaded. Is it a DOMLX file?
+        <br>
+        DOML files are not supported!
+    </div>
+</div>
+<script>
+    const input_csp = document.querySelector("#domlx-csp")
+    input_csp.addEventListener('change', readFileCSP, false)
+
+    const input_mc = document.querySelector("#domlx-mc")
+    input_mc.addEventListener('change', readFileMC, false)
+
+    const loadingBar = document.querySelector("#loading")
+    const errorBox = document.querySelector("#error")
+
+    async function readFile(event, url) {
+        const file = event.target.files[0]
+        if (file) {
+            loadingBar.classList.remove("is-hidden")
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/xml",
+                },
+                redirect: "follow",
+                body: await file.text()
+            })
+            if (res.status === 200) {
+                newHtml = await res.text()
+                // Fix escaped quotes for tags
+                // Unescape emojis
+                // See: https://stackoverflow.com/questions/51640509/
+                newHtml = newHtml.replace(/\\u[\dA-F]{4}/gi, function (match) {
+                    return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+                })
+                // Remove trailing and heading "
+                document.write(newHtml)
+            } else {
+                loadingBar.classList.add("is-hidden")
+                errorBox.classList.remove("is-hidden")
+            }
+        }
+    }
+
+    async function readFileCSP(event) {
+        readFile(event, '/csp_html')
+    }
+
+    async function readFileMC(event) {
+        readFile(event, '/modelcheck_html')
+    }
+</script>
+{% endblock content %}

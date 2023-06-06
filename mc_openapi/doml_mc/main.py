@@ -89,8 +89,9 @@ def verify_model(
     res = results.summarize()
 
     res['doml_version'] = dmc.doml_version.name
+    res['result'] = res['result'].name
 
-    logging.info(res)
+    # logging.info(res)
 
     # Check CSP
     if flags.get('_csp', False):

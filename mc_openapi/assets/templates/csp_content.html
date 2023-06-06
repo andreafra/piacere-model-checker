@@ -1,0 +1,98 @@
+<h1 class="title">CSP Compatibility Results</h1>
+{# FIX IMPORTS FOR MC #}
+{% if csp %}
+{% set keypairs = csp.keypairs %}
+{% set os = csp.os %}
+{% set arch = csp.arch %}
+{% set minreq = csp.minreq %}
+{% endif %}
+
+<div class="box">
+    {% if keypairs %}
+    <h2 class="title is-4">Keypairs</h2>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-hoverable">
+            {% for row in keypairs %}
+            {% set outer_loop = loop %}
+            <tr>
+                {% for column in row %}
+                {% if outer_loop.first or loop.first %}
+                <th>{{ column }}</th>
+                {% else %}
+                <td>{{ column }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    {% if os %}
+    <h2 class="title is-4">OS</h2>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-hoverable">
+            {% for row in os %}
+            {% set outer_loop = loop %}
+            <tr>
+                {% for column in row %}
+                {% if outer_loop.first or loop.first %}
+                <th>{{ column }}</th>
+                {% else %}
+                <td>{{ column }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    {% if arch %}
+    <h2 class="title is-4">Architectures</h2>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-hoverable">
+            {% for row in arch %}
+            {% set outer_loop = loop %}
+            <tr>
+                {% for column in row %}
+                {% if outer_loop.first or loop.first %}
+                <th>{{ column }}</th>
+                {% else %}
+                <td>{{ column }}</td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    {% if minreq %}
+    <h2 class="title is-4">Minimum Requirements</h2>
+    <div class="table-container">
+        <table class="table is-bordered is-striped is-hoverable">
+            {% for row in minreq %}
+            {% set outer_loop = loop %}
+            <tr>
+                {% for column in row %}
+                {% if outer_loop.first or loop.first %}
+                <th>{{ column }}</th>
+                {% else %}
+                <td>
+                    <ul>
+                        {% for item in column %}
+                        <li>
+                            {{ item }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endif %}

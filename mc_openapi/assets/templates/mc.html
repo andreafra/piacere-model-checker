@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">DOML Model Checker Results</h1>
+<div class="box">
+    <h2 class="title is-4">Result:
+        {% if result == "sat" %}
+        <span class="tag is-success is-medium">Satisfied</span>
+        {% else %}
+        <span class="tag is-danger is-medium">Unsatisfied</span>
+        {% endif %}
+    </h2>
+    <div class="control">
+        <div class="tags has-addons">
+            <span class="tag is-dark">DOML Version</span>
+            <span class="tag is-info">{{doml_version}}</span>
+        </div>
+    </div>
+    {% if result != "sat" %}
+
+    {% if all_reqs %}
+    <label class="checkbox my-4">
+        <input type="checkbox" id="show-sat-reqs">
+        Show satisfied requirements
+    </label>
+    <ul class="">
+        {% for req in all_reqs %}
+        {% if req.result == "unsat" %}
+        <li class="message is-danger">
+            <div class="message-header">
+                <p>
+                    Unsatisfied
+                </p>
+                <p>
+                    <span class="tag is-family-monospace is-danger is-light">
+                        {{req.id}}
+                    </span>
+                    <span class="tag is-danger is-light">{{req.type}}</span>
+                </p>
+            </div>
+            <div class="message-body">
+                <h2 class="title is-6 my-2">Description</h2>
+                <p>{{req.description}}</p>
+                <h2 class="title is-6 my-2">Error message:</h2>
+                <p>{{req.message}}</p>
+            </div>
+        </li>
+        {% else %}
+        <li class="message is-success sat-req is-hidden">
+            <div class="message-header">
+                <p>
+                    Satisfied
+                </p>
+                <p>
+                    <span class="tag is-family-monospace is-success is-light">
+                        {{req.id}}
+                    </span>
+                    <span class="tag is-success is-light">{{req.type}}</span>
+                </p>
+            </div>
+            <div class="message-body">
+                <h2 class="title is-6 my-2">Description</h2>
+                <p>{{req.description}}</p>
+            </div>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if user %}
+    <h3 class="title is-5">User Requirements</h3>
+    <ul class="">
+        {% for req in user %}
+        <li class="">
+            <h4>{{req[0]}}</h4>
+            <p>{{req[1]}}</p>
+            <ul class="notes">
+                {% for note in req[2] %}
+                <li>{{note}}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if dontknow %}
+    <article class="message is-warning">
+        <div class="message-header">
+            <p>Timeout!</p>
+        </div>
+        <div class="message-body">
+            There's been a timeout during the validation, so some requirements couldn't be verified.<br>
+            This is not the expected behaviour unless you are using custom requirements or/and very large DOML
+            models.<br>
+            Please report the issue if possible!
+        </div>
+    </article>
+    {% endif %}
+    {% endif %}
+    <script>
+        const checkbox = document.querySelector("#show-sat-reqs")
+        const satReqs = document.querySelectorAll(".sat-req")
+
+        checkbox.addEventListener("click", () => {
+            satReqs.forEach(el => el.classList.toggle('is-hidden'))
+        })
+    </script>
+</div>
+
+
+{% if csp %}
+{% include "csp_content.html" %}
+{% endif %}
+{% endblock content %}

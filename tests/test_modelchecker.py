@@ -28,7 +28,7 @@ def test_domlx_models_by_version(subtests):
                 if assert_result:
                     with subtests.test(msg=f"{doml_ver}/{domlx.name}", i=i):
                             res = run(domlx_file, assert_ver)
-                            assert assert_result == res['result'].name
+                            assert assert_result == res['result']
                             assert assert_ver.name == res['doml_version']
 
 OUTPUT = {
