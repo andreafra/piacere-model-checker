@@ -171,7 +171,7 @@ def parse_inverse_associations(doc: dict) -> list[tuple[str, str]]:
 def init_metamodels():
     global MetaModelDocs, MetaModels, InverseAssociations
     for ver in DOMLVersion:
-        source = ilres.files(assets).joinpath(f"doml_meta_{ver.value}.yaml")
+        source = ilres.files(assets).joinpath(f"metamodels/doml_meta_{ver.value}.yaml")
         
         mmdoc = yaml.load(source.read_text()  , yaml.Loader)
         MetaModelDocs[ver] = mmdoc

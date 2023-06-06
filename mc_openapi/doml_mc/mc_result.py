@@ -34,27 +34,23 @@ class MCResults:
     DONTKNOW_MSG = "Timed out: unable to check some requirements."
     SATISFIED_MSG = "All requirements are satisfied."
 
-    def __init__(self, results: list[tuple[MCResult, Literal["BUILTIN", "USER"], str]]):
+    def __init__(self, results: list[tuple[MCResult, Literal["BUILTIN", "USER"], str, str, str]]):
+        """It receives a list of tuples (result, type, error message, id)"""
         self.results = results
 
     def summarize(self) -> dict[str, any]:
-        some_unsat = any(res == MCResult.unsat for res, _, _ in self.results)
-        some_dontknow = any(
-            res == MCResult.dontknow for res, _, _ in self.results)
+        some_unsat = any(res == MCResult.unsat for res, _, _, _, _ in self.results)
+        some_dontknow = any(res == MCResult.dontknow for res, _, _, _, _ in self.results)
 
         if some_unsat:
             builtin_err_msgs = [
-                msg for res, type, msg in self.results if res == MCResult.unsat and type == "BUILTIN"]
+                (id, msg) for res, type, msg, id, _ in self.results if res == MCResult.unsat and type == "BUILTIN"]
             user_err_msgs = [
-                msg for res, type, msg in self.results if res == MCResult.unsat and type == "USER"]
+                (id, msg) for res, type, msg, id, _ in self.results if res == MCResult.unsat and type == "USER"]
 
             # Print to text (instead of HTML)
-            builtin_err_msg = "\n".join(builtin_err_msgs)
-            user_err_msg = ""
-            for req_desc, err, notes in user_err_msgs:
-                user_err_msg += req_desc + '\n'
-                user_err_msg += err + '\n'
-                user_err_msg += "\n\t".join(notes)
+            builtin_err_msg = "\n".join([f"[{id}] {msg}" for id, msg in builtin_err_msgs])
+            user_err_msg = "\n".join([f"[{id}] {msg}" for id, msg in user_err_msgs])
 
             err_msg = ""
             if builtin_err_msgs:
@@ -64,12 +60,24 @@ class MCResults:
             if some_dontknow:
                 err_msg += '\n' + MCResults.DONTKNOW_MSG
             
+            all_reqs = [
+                {
+                    "id": id,
+                    "type": type,
+                    "message": msg,
+                    "result": res.name,
+                    "description": desc 
+                }
+                for res, type, msg, id, desc in self.results
+            ]
+
             return {
                 'result': MCResult.unsat,
                 'builtin': builtin_err_msgs,
                 'user': user_err_msgs,
                 'dontknow': some_dontknow,
-                'description': err_msg
+                'description': err_msg,
+                'all_reqs': all_reqs
             }
         elif some_dontknow:
             return {'result': MCResult.dontknow, 'description': MCResults.DONTKNOW_MSG }

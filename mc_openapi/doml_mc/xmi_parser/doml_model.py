@@ -9,6 +9,7 @@ from pyecore.ecore import EObject
 from pyecore.resources import ResourceSet
 
 from mc_openapi import assets
+from mc_openapi.doml_mc.exceptions import BadDOMLException, MissingInfrastructureLayerException, NoActiveConcreteLayerException, UnsupportedDOMLVersionException
 
 from ..intermediate_model.doml_element import (
     IntermediateModel, reciprocate_inverse_associations)
@@ -23,7 +24,7 @@ def init_doml_rsets():  # noqa: E302
     global doml_rsets
     for ver in DOMLVersion:
         rset = ResourceSet()
-        source = ilres.files(assets).joinpath(f"doml_{ver.value}.ecore")
+        source = ilres.files(assets).joinpath(f"metamodels/doml_{ver.value}.ecore")
         resource = rset.get_resource(BytesURI(
             "doml", bytes=source.read_bytes()
         ))
@@ -76,7 +77,7 @@ def parse_doml_model(raw_model: bytes, doml_version: Optional[DOMLVersion]) -> T
                         except:
                             MSG_ERR_INVALID_DOML_VERSION = f"DOML requires version \"{model_version}\", but could not parse it with that version. Is the version valid?"
                             logging.error(MSG_ERR_INVALID_DOML_VERSION)
-                            raise RuntimeError(MSG_ERR_INVALID_DOML_VERSION)
+                            raise UnsupportedDOMLVersionException(MSG_ERR_INVALID_DOML_VERSION)
                 except:
                     pass
                 # DOML version is not specified, proceed as usual 
@@ -86,7 +87,7 @@ def parse_doml_model(raw_model: bytes, doml_version: Optional[DOMLVersion]) -> T
                 if len(doml_versions) == 0:
                     MSG_ERR_NO_DOML_VERSIONS = "No other compatible DOML versions found!"
                     logging.error(MSG_ERR_NO_DOML_VERSIONS)
-                    raise RuntimeError(MSG_ERR_NO_DOML_VERSIONS)
+                    raise UnsupportedDOMLVersionException(MSG_ERR_NO_DOML_VERSIONS)
                 else:
                     return get_model(raw_model, doml_version)
 
@@ -95,7 +96,7 @@ def parse_doml_model(raw_model: bytes, doml_version: Optional[DOMLVersion]) -> T
         try:
             model = parse_xmi_model(raw_model, doml_version)
         except:
-            raise RuntimeError("Parsing of DOML failed. Perhaps you are using the wrong DOML version or IDE?")
+            raise BadDOMLException("Parsing of DOML failed. Perhaps you are using the wrong DOML version or IDE?")
 
     logging.info(f"Model '{model.name}' parsed as DOML {doml_version.value}")
 
@@ -105,13 +106,13 @@ def parse_doml_model(raw_model: bytes, doml_version: Optional[DOMLVersion]) -> T
     if model.infrastructure:
         elp.parse_elayer(model.infrastructure)
     else:
-        raise RuntimeError("Abstract infrastructure layer is missing from DOML.")
+        raise MissingInfrastructureLayerException()
     if model.activeConfiguration:
         elp.parse_elayer(model.activeConfiguration)
     if model.activeInfrastructure:
         im = elp.parse_elayer(model.activeInfrastructure)
     else:
-        raise RuntimeError("No active concrete infrastructure layer has been specified in DOML.")
+        raise NoActiveConcreteLayerException()
 
     reciprocate_inverse_associations(im, InverseAssociations[doml_version])
 

@@ -1,6 +1,5 @@
 tabulate
-connexion
-connexion[swagger-ui]
+fastapi
 joblib
 z3-solver==4.11.* # Else it deadlocks the MC somehow
 networkx
