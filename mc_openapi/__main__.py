@@ -50,14 +50,8 @@ if not args.doml and not args.synth:
         'formatters': {'default': {
             'format': '[%(asctime)s] %(levelname)s: %(message)s',
         }},
-        'handlers': {'wsgi': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
-            'formatter': 'default'
-        }},
         'root': {
             'level': 'DEBUG',
-            'handlers': ['wsgi']
         }
     })
     logging.info(f"DOML Model Checker v{__version__}")
