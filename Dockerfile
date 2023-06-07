@@ -1,15 +1,12 @@
-FROM python:3.10-bullseye
+FROM python:3.11.3-buster AS requirements-stage
 
-COPY . /opt/mc_openapi
+WORKDIR /code
 
-RUN useradd -mU mc
-USER mc
-ENV PATH="/home/mc/.local/bin:${PATH}"
-RUN pip install --upgrade pip \
-    && pip install -r /opt/mc_openapi/requirements.txt
-WORKDIR /opt/mc_openapi
+COPY ./requirements.txt /code/requirements.txt
 
-ENV UVICORN_PORT=8080 \
-    UVICORN_HOST=0.0.0.0
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-CMD ["uvicorn", "mc_openapi.fastapi:app"]
+COPY ./mc_openapi /code/mc_openapi
+COPY ./tests /code/tests
+
+CMD ["uvicorn", "mc_openapi.api:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "80"]

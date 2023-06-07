@@ -7,7 +7,7 @@ import re
 from tabulate import tabulate
 import uvicorn
 
-from mc_openapi.fastapi import app
+from mc_openapi.api import app
 from mc_openapi.doml_mc import DOMLVersion, init_model, verify_csp_compatibility, verify_model, synthesize_model
 from mc_openapi.doml_mc.domlr_parser.exceptions import RequirementException
 from mc_openapi.doml_mc.mc_result import MCResult
