@@ -12,4 +12,4 @@ WORKDIR /opt/mc_openapi
 ENV UVICORN_PORT=8080 \
     UVICORN_HOST=0.0.0.0
 
-CMD ["uvicorn", "--interface", "wsgi", "mc_openapi.app_config:app"]
+CMD ["uvicorn", "--interface", "wsgi", "mc_openapi.fastapi:app"]
