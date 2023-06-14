@@ -1,0 +1,91 @@
+include:
+  - project: piacere/private/t23-ci-setup
+    ref: main
+    file:
+      - gitlab-ci-scripts/utils.gitlab-ci.yml
+
+      # Image tag variables generation job -------------
+      # Stage: variable-generation ---------------------
+      - gitlab-ci-scripts/generate-variables.gitlab-ci.yml
+      
+      # Downstream t23-ci-setup pipeline trigger job ---
+      # Stage: integration-tests-publish-deploy --------
+      - gitlab-ci-scripts/trigger-downstream.gitlab-ci.yml
+
+variables:
+  # ------------------------
+  # Component image tag data
+  # ------------------------
+  COMPONENT_WP: wp4
+  DMC_IMAGE_NAME: dmc
+
+  # ------------------------------------------
+  # Space-separated component image abbreviation list
+  # used to generate image tags and related variables.
+  # It is also passed to the downstream integration tests,
+  # publication and deployment pipeline
+  # ------------------------------------------
+  IMAGE_NAMES: "$DMC_IMAGE_NAME"
+
+stages:
+  - variable-generation
+  - build
+  - security
+  - functional-tests
+  - integration-tests-publish-deploy
+
+# Build jobs ----------------------
+
+build-temp-dmc:
+  stage: build
+  variables:
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+    DOCKERFILE_PATH: "."
+  trigger: !reference [.trigger-build]
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^y3/
+
+# Security job ------------------------
+
+security-trivy-dmc:
+  stage: security
+  variables:
+    TMP_IMAGE: "$TMP_IMAGE_DMC"
+  trigger: !reference [.trigger-security-trivy]
+  needs:
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^y3/
+
+# functional tests job ------------------------
+
+run-functional-tests:
+  image: $DOCKER_IMAGE
+  stage: functional-tests
+  services:
+    - $DOCKER_DIND_IMAGE
+  variables:
+    TESTS_CONTAINER_NAME: functional-tester
+  before_script:
+    - !reference [.artifactory-login]
+  script:
+    # Tests assume port 8080, while the Dockerfile CMD runs the server on port 80.
+    # Thus, we need to override the command so that the server is run on port 8080.
+    - docker run --name $TESTS_CONTAINER_NAME -d -e "UVICORN_PORT=8080" $TMP_IMAGE_DMC
+    # Install everything required for the tests.
+    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c
+        "pip install -r requirements.txt"
+    # Run the tests.
+    - docker exec -i $TESTS_CONTAINER_NAME /bin/bash -c "python -m pytest tests/test_mc_openapi.py -n auto"
+    # Stop the tests container.
+    - docker stop $TESTS_CONTAINER_NAME
+  needs:
+    - job: build-temp-dmc
+    - job: generate-variables
+      artifacts: true
+  tags:
+    - docker
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^y3/
