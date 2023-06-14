@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="title">Error</h1>
+<div class="message is-danger">
+    <div class="message-header">
+        <p>
+            An error occurred while validating the DOML
+        </p>
+    </div>
+    <div class="message-body">
+        <h2 class="title is-6 my-2">Description</h2>
+        <p>{{message}}</p>
+        <details>
+            <summary class="title is-6 my-2">Debug Message</summary>
+            <pre class="is-family-monospace message-body">
+                {{debug_message}}
+            </pre>
+        </details>
+    </div>
+</div>
+
+{% endblock content %}

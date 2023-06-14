@@ -42,31 +42,18 @@ def handleDOMLX(doml_xmi: bytes, callback) -> dict:
 
         dmc = init_model(doml_xmi, doml_version)
 
-        return callback(dmc)
+        res = callback(dmc)
 
-    except (
-        BadDOMLException,
-        UnsupportedDOMLVersionException,
-        MissingInfrastructureLayerException,
-        NoActiveConcreteLayerException
-    ) as e:
-        return JSONResponse(
-            status_code=400,
-            content=jsonable_encoder({
-                "message": e.errors,
-                "debug_message": traceback.format_exc()
-            })
-        )
+        return res
+
     except (RuntimeError, Exception) as e:
-        logging.error(traceback.format_exc())
-        return JSONResponse(
-            status_code=400,
-            content=jsonable_encoder({
-                "message": "An error has occurred. It could be an error within your DOML file. If it persist, try specifying DOML version manually.",
-                "debug_message": traceback.format_exc()
-            })
-        )
-        
+        ERR_MSG = "An error has occurred.\nIt could be an error within your DOML file.\nIf it persist, try specifying DOML version manually."
+        logging.exception(e)
+        return {
+            "type": "error",
+            "message": e.message or ERR_MSG,
+            "debug_message": traceback.format_exc()
+        }
 
 @app.post("/modelcheck")
 async def mc(request: Request):
@@ -81,11 +68,20 @@ async def csp(request: Request):
 @app.post("/modelcheck_html")
 async def mc_html(request: Request):
     doml_xmi = await request.body()
-    res =  handleDOMLX(doml_xmi, verify_model)
-    return templates.TemplateResponse("mc.html", {"request": request, **res})
+    res = handleDOMLX(doml_xmi, verify_model)
+    print(res)
+    if res.get("type") == "error":
+        return templates.TemplateResponse("error.html", {"request": request, **res})
+    else:
+        return templates.TemplateResponse("mc.html", {"request": request, **res})
+  
 
 @app.post("/csp_html")
 async def csp_html(request: Request):
     doml_xmi = await request.body()
-    res =  handleDOMLX(doml_xmi, verify_csp_compatibility)
-    return templates.TemplateResponse("csp.html", {"request": request, **res})
+    res = handleDOMLX(doml_xmi, verify_csp_compatibility)
+    if res.get("type") == "error":
+        return templates.TemplateResponse("error.html", {"request": request, **res})
+    else:
+        return templates.TemplateResponse("csp.html", {"request": request, **res})
+  
