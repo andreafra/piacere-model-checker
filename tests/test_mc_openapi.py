@@ -8,7 +8,7 @@ def test_post_nginx_sat_V2_0():
     with open("tests/doml/v2.0/nginx-openstack_v2.0.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -19,7 +19,7 @@ def test_post_faas_unsat_V2_0():
     with open("tests/doml/v2.0/faas.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -40,7 +40,7 @@ def test_post_common_reqs_V2_0():
         with open(f"tests/doml/v2.0/nginx-openstack_v2.0_wrong_{req.assert_name}.domlx", "r") as f:
             doml = f.read()
 
-        r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+        r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
         payload = r.json()
         assert r.status_code == requests.codes.ok
         assert payload["result"] is not None
@@ -53,7 +53,7 @@ def test_post_nginx_sat_V2_1():
     with open("tests/doml/v2.1/nginx-aws-ec2.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -64,7 +64,7 @@ def test_post_faas_unsat_V2_1():
     with open("tests/doml/v2.1/faas.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -75,7 +75,7 @@ def test_post_nginx_sat_V2_1():
     with open("tests/doml/v2.2/nginx-aws-ec2.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -86,7 +86,7 @@ def test_post_faas_unsat_V2_2():
     with open("tests/doml/v2.2/faas.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
@@ -97,7 +97,7 @@ def test_post_nginx_with_func_reqs_unsat_V2_2():
     with open("tests/doml/v2.2/nginx_func_req.domlx", "r") as f:
         doml = f.read()
 
-    r = requests.post("http://0.0.0.0:8080/modelcheck", data=doml)
+    r = requests.post("http://0.0.0.0:80/modelcheck", data=doml)
     payload = r.json()
     assert r.status_code == requests.codes.ok
     assert payload["result"] is not None
