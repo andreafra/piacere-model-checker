@@ -5,8 +5,7 @@ from doml_synthesis import State
 from lark import Lark, UnexpectedCharacters, UnexpectedEOF
 from z3 import Not
 
-from mc_openapi.doml_mc.domlr_parser.exceptions import \
-    RequirementBadSyntaxException
+from mc_openapi.doml_mc.domlr_parser.exceptions import ParserException, RequirementBadSyntaxException, RequirementMissingKeyException
 from mc_openapi.doml_mc.domlr_parser.utils import StringValuesCache, VarStore
 from mc_openapi.doml_mc.imc import RequirementStore
 
@@ -72,6 +71,7 @@ class Parser:
         except UnexpectedCharacters as e:
             msg = _get_error_desc_for_unexpected_characters(e, input)
             raise RequirementBadSyntaxException(e.line, e.column, msg)
+
 
 def _get_error_desc_for_unexpected_characters(e: UnexpectedCharacters, input: str):
     # Error description

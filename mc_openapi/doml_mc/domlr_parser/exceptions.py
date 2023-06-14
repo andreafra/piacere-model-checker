@@ -18,3 +18,8 @@ class RequirementBadSyntaxException(RequirementException):
     def __init__(self, line: int, col: int, message: str, *args: object) -> None:
         super().__init__(*args)
         self.message = f"Syntax Error at Ln {line}, Col {col}:\n{message}"
+
+class ParserException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+        self.errors = "Failed to parse DOMLR."

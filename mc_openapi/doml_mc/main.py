@@ -83,13 +83,14 @@ def verify_model(
         req_store,
         threads=threads, 
         user_str_values=user_req_str_consts,
-        disable_multithreading=(threads == 1)
+        disable_multithreading=True #(threads == 1)
     )
 
     res = results.summarize()
 
     res['doml_version'] = dmc.doml_version.name
     res['result'] = res['result'].name
+    res['type'] = 'message'
 
     # logging.info(res)
 
@@ -159,5 +160,7 @@ def synthesize_model(dmc: ModelChecker, external_domlr: str, max_tries: int):
 
     
 def verify_csp_compatibility(dmc: ModelChecker):
-    return CSPCompatibility.check(dmc.intermediate_model, dmc.doml_version)
+    res = CSPCompatibility.check(dmc.intermediate_model, dmc.doml_version)
+    res['type'] = 'message'
+    return res
     
