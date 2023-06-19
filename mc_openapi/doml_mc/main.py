@@ -83,7 +83,7 @@ def verify_model(
         req_store,
         threads=threads, 
         user_str_values=user_req_str_consts,
-        disable_multithreading=True #(threads == 1)
+        disable_multithreading=(threads == 1)
     )
 
     res = results.summarize()
