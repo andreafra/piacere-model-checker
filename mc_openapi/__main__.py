@@ -104,7 +104,7 @@ else:
             res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
 
             print("[RESULT]")
-            if res['result'] == MCResult.sat:
+            if res['result'] == MCResult.sat.name:
                 print(res['description'])
             else:
                 print(res['result'])
