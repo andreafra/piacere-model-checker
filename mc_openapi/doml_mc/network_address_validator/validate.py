@@ -1,84 +1,117 @@
-from mc_openapi.doml_mc.intermediate_model.doml_element import DOMLElement
+from mc_openapi.doml_mc.intermediate_model import DOMLElement
 from mc_openapi.doml_mc.mc import ModelChecker
-import ipaddress
+from ipaddress import IPv4Address, IPv4Network
+
+
+BASE_ADDR = '0.0.0.0'
+
+ASSOC_SUBNETS = 'infrastructure_Network::subnets'
+ASSOC_GATEWAYS = 'infrastructure_Network::gateways'
+ASSOC_IFACE_NET = 'infrastructure_NetworkInterface::belongsTo'
+
+ATTR_NET_ADDRESS = 'infrastructure_Network::addressRange'
+ATTR_GATEWAY_ADDRESS = 'infrastructure_InternetGateway::address'
+ATTR_IFACE_ADDRESS = 'infrastructure_NetworkInterface::endPoint'
+
+def get_attr(elem: DOMLElement, attr_id: str):
+    if elem := elem.attributes.get(attr_id):
+        return elem[0]
+    return None
+    
+def get_assocs(elem: DOMLElement, assoc_id: str):
+    return elem.associations.get(assoc_id, [])
 
 def validate_network_address(imc: ModelChecker):
     """
     HOW IT WORKS:
 
-    - Network.cidr
-    - Subnet.cidr
+    - Network.addressRange
+    - Subnet.addressRange
     - InternetGateway.address
     - NetworkInterface.endPoint
+
+    before MC
+    validate network
+    generate report
+    attach report to HTML output
     """
 
     im = imc.intermediate_model
 
     networks = [e for e in im.values() if e.class_ == 'infrastructure_Network']
     ifaces = [e for e in im.values() if e.class_ == 'infrastructure_NetworkInterface']
+    subnets = [e for e in im.values() if e.class_ == 'infrastructure_Subnet']
 
-    addresses = set()
+    def visit_subnet(net: DOMLElement, acc: list):
+        """Recursively navigate subnets to populate the `acc` list with all the subnet in a network."""
+        for subnet in get_assocs(net, ASSOC_SUBNETS):
+            subnet = im[subnet]
+            subnet_addr = fix_invalid_address( get_attr(subnet, ATTR_NET_ADDRESS) )
+            acc.append((subnet, IPv4Network(subnet_addr)))
+            visit_subnet(subnet, acc)
 
-    def get_attr(elem: DOMLElement, attr_id: str):
-        if elem := elem.attributes.get(attr_id):
-            return elem[0]
-    def get_assocs(elem: DOMLElement, assoc_id: str):
-        return elem.associations.get(assoc_id, [])
+    def fix_invalid_address(address: any):
+        # TODO: Use a match statement or use regexps
+        if isinstance(address, str) and address.startswith('/'):
+            return f"{BASE_ADDR}{address}"
 
-    NETS = {}
+        return address
 
-    # We can have multiple networks. For each of them, retrieve:
-    # - CIDR (/XX)
-    # - The base address(es): we can get them from the gateway address + the CIDR
+    warnings = []
+
     for network in networks:
+        # Tuple(elem, cidr)
+        subnets: list[tuple[DOMLElement, IPv4Network]] = []
+        # Tuple(elem, address)
+        addresses: list[tuple[DOMLElement, IPv4Address]] = []
 
-        net_cidr = get_attr(network, 'infrastructure_Network::cidr')
+        # Add subnets (Networks)
+        visit_subnet(network, subnets)
 
-        net = Network(("0.0.0.0", net_cidr))
-        
-        gateways = get_assocs(network, 'infrastructure_Network::gateways')
-        for gateway_id in gateways:
-            gateway = im[gateway_id]
-            gateway_address = get_attr(gateway, 'infrastructure_InternetGateway::address')
-            
-            net.net.network_address = ipaddress.IPv4Network((gateway_address, net_cidr), strict=False).network_address
+        # pprint("SUBNETS:")
+        # pprint(subnets)
 
-            net.add_address(gateway_address)
+        # Add addresses (gateways, ifaces)
+        for gateway in get_assocs(network, ASSOC_GATEWAYS):
+            gateway = im[gateway]
+            if gateway_address := get_attr(gateway, ATTR_GATEWAY_ADDRESS):
+                addresses.append((gateway, IPv4Address(gateway_address)))
 
-        subnets = get_assocs(network, 'infrastructure_Network::subnets')
-        for subnet_id in subnets:
-            subnet = im[subnet_id]
-            subnet_cidr = get_attr(subnet, 'infrastructure_Network::cidr')
-            
-            net.add_subnet(subnet_cidr)
-        
-        print(net.net)
-        print(net.subnets)
-        print(net.addresses)
-        NETS[network.user_friendly_name] = net
-    
-    for iface in ifaces:
-        print(iface)
-        net_ids = get_assocs(iface, 'infrastructure_NetworkInterface::belongsTo')
-        for net_id in net_ids:
-            net = im[net_id]
-            print(net)
+        for iface in ifaces:
+            if owner_id := get_assocs(iface, ASSOC_IFACE_NET):
+                owner = im[list(owner_id)[0]]
+                if owner.id_ in [s.id_ for (s, _) in subnets] + [network.id_]:
+                    if ((iface_address := get_attr(iface, ATTR_IFACE_ADDRESS))
+                    and (owner_address := get_attr(owner, ATTR_NET_ADDRESS))):
+                        owner_address = fix_invalid_address(owner_address)
+                        iface_address = IPv4Address(iface_address)
+                        owner_address = IPv4Network(owner_address)
+                        # TODO: Remove?
+                        print(f"{iface.user_friendly_name} ({iface_address}) belongs to {owner.user_friendly_name} ({owner_address})? {iface_address in owner_address.hosts()}")
 
+                        addresses.append((iface, iface_address))
+                else:
+                    # TODO: Convert to warning
+                    print(f"NetworkInterface '{iface.user_friendly_name}' does not belong to net '{owner.user_friendly_name}'.")
 
-    return
+        # Validate Network and Subnets
+        net_addr = fix_invalid_address( get_attr(network, ATTR_NET_ADDRESS) )
+        # prepend 0.0.0.0 if starts with / i guess, print a warning
+        print(f"{net_addr}\t{network.user_friendly_name}")
 
-class Network:
-    def __init__(self, address) -> None:
-        self.net = ipaddress.IPv4Network(address)
-        self.subnets = set()
-        self.addresses = set()
+        net = IPv4Network(net_addr)
 
-    def add_subnet(self, cidr):
-        sn = ipaddress.IPv4Network((self.net.network_address, cidr))
-        self.subnets.add(sn)
+        if len(subnets) > 0:
+            for (obj, sn) in subnets:
+                # TODO: Convert to warning
+                print(f"{sn}\t{obj.user_friendly_name} belongs? {sn.subnet_of(net)}")
+        else:
+            print("No subnets!")
 
-    def add_address(self, address):
-        self.addresses.add(address)
+        # Validate addresses (again)
+        for (obj, addr) in addresses:
+            # TODO: Convert to warning
+            print(f"NetworkInterface '{obj.user_friendly_name}' ({addr}) belong to net '{network.user_friendly_name}' ({net_addr})? {addr in net.hosts()}")
 
-    def assert_no_subnet_overlap(self):
-        sns = [(s1, s2) for s1 in self.subnets for s2 in self.subnets if s1 != s2 and s1]
+  
+
