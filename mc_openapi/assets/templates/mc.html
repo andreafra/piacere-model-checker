@@ -107,8 +107,9 @@
             satReqs.forEach(el => el.classList.toggle('is-hidden'))
         })
     </script>
-</div>
 
+    {% include "net.html" %}
+</div>
 
 {% if csp %}
 {% include "csp_content.html" %}

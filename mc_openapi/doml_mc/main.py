@@ -14,6 +14,7 @@ from mc_openapi.doml_mc.domlr_parser import (DOMLRTransformer, Parser,
 from mc_openapi.doml_mc.imc import RequirementStore
 from mc_openapi.doml_mc.intermediate_model.metamodel import (DOMLVersion,
                                                              MetaModelDocs)
+from mc_openapi.doml_mc.network_address_validator.validate import validate_network_address
 
 
 def init_model(domlx:bytes, doml_ver: DOMLVersion):
@@ -97,6 +98,9 @@ def verify_model(
     # Check CSP
     if flags.get('_csp', False):
         res['csp'] = verify_csp_compatibility(dmc)
+
+    # Validate network
+    res['net_validation'] = validate_network_address(dmc)
 
     return res
 
