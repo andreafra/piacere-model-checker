@@ -43,11 +43,13 @@ def validate_network_address(imc: ModelChecker):
     ifaces = [e for e in im.values() if e.class_ == 'infrastructure_NetworkInterface']
     subnets = [e for e in im.values() if e.class_ == 'infrastructure_Subnet']
 
+    warnings: list[tuple[str, list[tuple[str, str]]]] = []
+
     def visit_subnet(net: DOMLElement, acc: list):
         """Recursively navigate subnets to populate the `acc` list with all the subnet in a network."""
         for subnet in get_assocs(net, ASSOC_SUBNETS):
             subnet = im[subnet]
-            subnet_addr = fix_invalid_address( get_attr(subnet, ATTR_NET_ADDRESS) )
+            subnet_addr = fix_invalid_address(get_attr(subnet, ATTR_NET_ADDRESS), net, warnings)
             acc.append((subnet, IPv4Network(subnet_addr)))
             visit_subnet(subnet, acc)
 
@@ -59,7 +61,6 @@ def validate_network_address(imc: ModelChecker):
 
         return address
 
-    warnings: list[tuple[str, list[tuple[str, str]]]] = []
 
     for network in networks:
 
