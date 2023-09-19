@@ -412,9 +412,6 @@ infrastructure:
             machineDefinition:
                 class: infrastructure_VirtualMachine
                 multiplicity: "1"
-            securityGroup:
-                class: infrastructure_SecurityGroup
-                multiplicity: "0..1"
     Storage:
         superclass: infrastructure_Node
         attributes:
@@ -439,9 +436,7 @@ infrastructure:
             protocol:
                 type: String
                 multiplicity: "0..1"
-            addressRange:
-                type: String
-                multiplicity: "0..1"
+                default: "TCP/IP"
             cidr:
                 type: Integer
                 multiplicity: "0..1"
@@ -633,6 +628,13 @@ concrete:
                 multiplicity: "0..1"
     Network:
         superclass: concrete_ConcreteElement
+        attributes:
+            protocol:
+                type: String
+                multiplicity: "0..1"
+            addressRange:
+                type: String
+                multiplicity: "0..1"
         associations:
             subnets:
                 class: concrete_Subnet
@@ -641,10 +643,7 @@ concrete:
                 class: infrastructure_Network
                 multiplicity: "0..1"
     Subnet:
-        superclass: concrete_ConcreteElement
-        associations:
-            class: infrastructure_Subnet
-            multiplicity: "0..*"
+        superclass: concrete_Network
     Storage:
         superclass: concrete_ConcreteElement
         associations:

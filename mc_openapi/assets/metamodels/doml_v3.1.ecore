@@ -197,8 +197,6 @@
           defaultValueLiteral="1"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="max" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"
           defaultValueLiteral="1"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="securityGroup" eType="#//infrastructure/SecurityGroup"
-          containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="loadBalancer" eType="#//infrastructure/LoadBalancerKind"
           defaultValueLiteral="DEFAULT"/>
     </eClassifiers>
@@ -330,8 +328,8 @@
           eType="#//infrastructure/SecurityGroup"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Network" eSuperTypes="#//commons/DOMLElement">
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="protocol" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="addressRange" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="protocol" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+          defaultValueLiteral="TCP/IP"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="connectedIfaces" upperBound="-1"
           eType="#//infrastructure/NetworkInterface" eOpposite="#//infrastructure/NetworkInterface/belongsTo"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="gateways" upperBound="-1"
@@ -434,14 +432,13 @@
       <eStructuralFeatures xsi:type="ecore:EReference" name="maps" eType="#//infrastructure/ExecutionEnvironment"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Network" eSuperTypes="#//concrete/ConcreteElement">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="protocol" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="addressRange" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="subnets" upperBound="-1"
           eType="#//concrete/Subnet" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="maps" eType="#//infrastructure/Network"/>
     </eClassifiers>
-    <eClassifiers xsi:type="ecore:EClass" name="Subnet" eSuperTypes="#//concrete/ConcreteElement">
-      <eStructuralFeatures xsi:type="ecore:EReference" name="maps" upperBound="-1"
-          eType="#//infrastructure/Subnet"/>
-    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Subnet" eSuperTypes="#//concrete/Network"/>
     <eClassifiers xsi:type="ecore:EClass" name="Storage" eSuperTypes="#//concrete/ConcreteElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="maps" eType="#//infrastructure/Storage"/>
     </eClassifiers>
@@ -455,7 +452,7 @@
     <eClassifiers xsi:type="ecore:EClass" name="ExtConcreteElement" eSuperTypes="#//concrete/ConcreteElement #//commons/ExtensionElement"/>
   </eSubpackages>
   <eSubpackages name="optimization" nsURI="http://www.piacere-project.eu/doml/optimization"
-      nsPrefix="optimization">
+      nsPrefix="opt">
     <eClassifiers xsi:type="ecore:EClass" name="OptimizationLayer" eSuperTypes="#//commons/DOMLElement">
       <eStructuralFeatures xsi:type="ecore:EReference" name="startingHint" eType="#//commons/Configuration"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="solutions" upperBound="-1"
@@ -464,6 +461,7 @@
           eType="#//optimization/OptimizationObjective" containment="true"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="nonfunctionalRequirements"
           upperBound="-1" eType="#//commons/Requirement" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="runtime" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloatObject"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="ObjectiveValue">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="cost" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloatObject"/>
