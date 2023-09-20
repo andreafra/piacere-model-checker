@@ -24,7 +24,7 @@ commons:
         superclass: commons_Property
         associations:
             values:
-                type: commons_Property
+                class: commons_Property
                 multiplicity: "0..*"
     IProperty:
         superclass: commons_Property
@@ -76,7 +76,7 @@ commons:
             user:
                 type: String
                 multiplicity: "0..1"
-            keyfile:
+            key:
                 type: String
                 multiplicity: "0..1"
             algorithm:
@@ -99,10 +99,13 @@ commons:
         attributes:
             entry:
                 type: String
-                multiplicity: "0..*"
+                multiplicity: "0..1"
+            inventory:
+                type: String
+                multiplicity: "0..1"
             backend:
                 type: String
-                multiplicity: "0..*"
+                multiplicity: "0..1"
 application:
     ApplicationLayer:
         superclass: commons_DOMLElement

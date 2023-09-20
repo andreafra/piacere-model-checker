@@ -106,7 +106,7 @@
     <eClassifiers xsi:type="ecore:EClass" name="Credentials" abstract="true" eSuperTypes="#//commons/DOMLElement"/>
     <eClassifiers xsi:type="ecore:EClass" name="KeyPair" eSuperTypes="#//commons/Credentials">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="user" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="keyfile" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="key" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="algorithm" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="bits" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"/>
     </eClassifiers>
@@ -116,6 +116,7 @@
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Source" eSuperTypes="#//commons/DOMLElement">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="entry" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="inventory" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="backend" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>
   </eSubpackages>
