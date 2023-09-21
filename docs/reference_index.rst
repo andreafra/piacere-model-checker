@@ -15,3 +15,5 @@ For a comprehensive list of all the classes, attributes and associations support
 -----------------------------------------------
 :doc:`Reference for DOML v3.0 <reference_v3.0>`
 -----------------------------------------------
+:doc:`Reference for DOML v3.1 <reference_v3.1>`
+-----------------------------------------------
