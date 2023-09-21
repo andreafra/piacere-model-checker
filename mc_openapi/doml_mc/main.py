@@ -11,6 +11,7 @@ from mc_openapi.doml_mc.csp_compatibility import \
     CSPCompatibilityValidator as CSPCompatibility
 from mc_openapi.doml_mc.domlr_parser import (DOMLRTransformer, Parser,
                                              SynthesisDOMLRTransformer)
+from mc_openapi.doml_mc.exceptions import CommonRequirementException
 from mc_openapi.doml_mc.imc import RequirementStore
 from mc_openapi.doml_mc.intermediate_model.metamodel import (DOMLVersion,
                                                              MetaModelDocs)
@@ -59,9 +60,13 @@ def verify_model(
 
     # Built-in requirements
     if not (flags.get('_ignore_builtin', False) or skip_builtin_checks):
-        req_store += CommonRequirements[dmc.doml_version]
-        # Skip selected requirements
-        req_store.skip_requirements_by_id([k for k,v in flags.items() if not k.startswith("_") and v is False])
+        try:
+            req_store += CommonRequirements[dmc.doml_version]
+            # Skip selected requirements
+            req_store.skip_requirements_by_id([k for k,v in flags.items() if not k.startswith("_") and v is False])
+        except:
+            logging.error('Failed to get Common Requirements. DOML Version is wrong?')
+            raise CommonRequirementException()
 
     # Consistency requirements (disabled by default)
     if flags.get('_check_consistency', False) or consistency_checks:

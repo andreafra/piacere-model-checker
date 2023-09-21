@@ -45,13 +45,20 @@ def handleDOMLX(doml_xmi: bytes, callback) -> dict:
         res = callback(dmc)
 
         return res
-
+    except KeyError as e:
+        ERR_MSG = f"Error: Key '{e.args[0]}' not found.\nVery likely, in the Model Checker requirements, the relationship '{e.args[0]}' is unknown.\nPerhaps this was parsed with the wrong DOML version, otherwise the DOML version you're using is currently unsupported."
+        logging.exception(e)
+        return {
+            "type": "error",
+            "message": ERR_MSG,
+            "debug_message": traceback.format_exc()
+        }
     except (RuntimeError, Exception) as e:
         ERR_MSG = "An error has occurred.\nIt could be an error within your DOML file.\nIf it persist, try specifying DOML version manually."
         logging.exception(e)
         return {
             "type": "error",
-            "message": e.message or ERR_MSG,
+            "message": e.message if hasattr(e, 'message') else ERR_MSG,
             "debug_message": traceback.format_exc()
         }
 

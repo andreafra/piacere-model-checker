@@ -1,6 +1,3 @@
-from mc_openapi.doml_mc.intermediate_model.metamodel import DOMLVersion
-
-
 class BadDOMLException(Exception):
     def __init__(self, message: str = None, *args: object) -> None:
         super().__init__(*args)
@@ -21,3 +18,7 @@ class NoActiveConcreteLayerException(Exception):
         super().__init__(*args)
         self.message = message or "No active concrete infrastructure layer has been specified in DOML."
 
+class CommonRequirementException(Exception):
+    def __init__(self, message: str = None, *args: object) -> None:
+        super().__init__(*args)
+        self.message = message or "Couldn't get built-in requirements for this DOML version."
