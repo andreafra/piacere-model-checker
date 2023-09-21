@@ -495,6 +495,169 @@ def software_package_iface_net_v2_3(smtenc: SMTEncoding, smtsorts: SMTSorts) -> 
         )
     )
 
+def software_package_iface_net_v3_1(smtenc: SMTEncoding, smtsorts: SMTSorts) -> ExprRef:
+    asc_consumer, asc_exposer, siface, net, net_iface, cnode, cdeployment, enode, edeployment, vm, cconf, csubnet, esubnet = Consts(
+        "asc_consumer asc_exposer siface net net_iface cnode cdeployment enode edeployment vm cconf csubnet esubnet", smtsorts.element_sort
+    )
+    return And(
+        smtenc.association_rel(
+            asc_consumer, smtenc.associations["application_SoftwareComponent::exposedInterfaces"], siface),
+        smtenc.association_rel(
+            asc_exposer, smtenc.associations["application_SoftwareComponent::consumedInterfaces"], siface),
+        Not(
+            Or(
+                Exists(
+                    [cdeployment, cnode, edeployment, enode, net],
+                    And(
+                        smtenc.association_rel(
+                            cdeployment, smtenc.associations["commons_Deployment::component"], asc_consumer),
+                        smtenc.association_rel(
+                            cdeployment, smtenc.associations["commons_Deployment::node"], cnode),
+                        Exists(
+                            [vm, net_iface, cconf],
+                            Or(
+                                And(  # asc_consumer is deployed on a component with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                                And(  # asc_consumer is deployed on a container hosted in a VM with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_Container::hostConfigs"], cconf),
+                                    smtenc.association_rel(
+                                        cconf, smtenc.associations["infrastructure_ContainerHostConfig::host"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                                And(  # asc_consumer is deployed on a VM in an AutoScalingGroup with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_AutoScalingGroup::machineDefinition"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                            )
+                        ),
+                        smtenc.association_rel(
+                            edeployment, smtenc.associations["commons_Deployment::component"], asc_exposer),
+                        smtenc.association_rel(
+                            edeployment, smtenc.associations["commons_Deployment::node"], enode),
+                        Exists(
+                            [vm, net_iface, cconf],
+                            Or(
+                                And(  # asc_exposer is deployed on a component with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                                And(  # asc_exposer is deployed on a container hosted on a VM with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_Container::hostConfigs"], cconf),
+                                    smtenc.association_rel(
+                                        cconf, smtenc.associations["infrastructure_ContainerHostConfig::host"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                                And(  # asc_exposer is deployed on a VM in an AutoScalingGroup with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_AutoScalingGroup::machineDefinition"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], net),
+                                ),
+                            )
+                        )
+                    )
+                ),  # OR
+                Exists(
+                    [cdeployment, cnode, edeployment, enode, csubnet, esubnet],
+                    And(
+                        smtenc.association_rel(
+                            cdeployment, smtenc.associations["commons_Deployment::component"], asc_consumer),
+                        smtenc.association_rel(
+                            cdeployment, smtenc.associations["commons_Deployment::node"], cnode),
+                        Or(
+                            smtenc.association_rel(
+                                csubnet, smtenc.associations["infrastructure_Subnet::connectedTo"], esubnet),
+                            smtenc.association_rel(
+                                esubnet, smtenc.associations["infrastructure_Subnet::connectedTo"], csubnet),
+                        ),
+                        Exists(
+                            [vm, net_iface, cconf],
+                            Or(
+                                And(  # asc_consumer is deployed on a component with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], csubnet),
+                                ),
+                                And(  # asc_consumer is deployed on a container hosted in a VM with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_Container::hostConfigs"], cconf),
+                                    smtenc.association_rel(
+                                        cconf, smtenc.associations["infrastructure_ContainerHostConfig::host"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], csubnet),
+                                ),
+                                And(  # asc_consumer is deployed on a VM in an AutoScalingGroup with an interface in network n
+                                    smtenc.association_rel(
+                                        cnode, smtenc.associations["infrastructure_AutoScalingGroup::machineDefinition"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], csubnet),
+                                ),
+                            )
+                        ),
+                        smtenc.association_rel(
+                            edeployment, smtenc.associations["commons_Deployment::component"], asc_exposer),
+                        smtenc.association_rel(
+                            edeployment, smtenc.associations["commons_Deployment::node"], enode),
+                        Exists(
+                            [vm, net_iface, cconf],
+                            Or(
+                                And(  # asc_exposer is deployed on a component with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], esubnet),
+                                ),
+                                And(  # asc_exposer is deployed on a container hosted on a VM with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_Container::hostConfigs"], cconf),
+                                    smtenc.association_rel(
+                                        cconf, smtenc.associations["infrastructure_ContainerHostConfig::host"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], esubnet),
+                                ),
+                                And(  # asc_exposer is deployed on a VM in an AutoScalingGroup with an interface in network n
+                                    smtenc.association_rel(
+                                        enode, smtenc.associations["infrastructure_AutoScalingGroup::machineDefinition"], vm),
+                                    smtenc.association_rel(
+                                        vm, smtenc.associations["infrastructure_Node::ifaces"], net_iface),
+                                    smtenc.association_rel(
+                                        net_iface, smtenc.associations["infrastructure_NetworkInterface::belongsTo"], esubnet),
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+
 
 def ed_software_package_iface_net(solver: Solver, smtsorts: SMTSorts, intermediate_model: IntermediateModel) -> str:
     try:
@@ -534,6 +697,13 @@ SOFTWARE_PACKAGE_IFACE_NET_V2_1 = (
 
 SOFTWARE_PACKAGE_IFACE_NET_V2_3 = (
     software_package_iface_net_v2_3,
+    "software_package_iface_net",
+    MSG,
+    ed_software_package_iface_net
+)
+
+SOFTWARE_PACKAGE_IFACE_NET_V3_1 = (
+    software_package_iface_net_v3_1,
     "software_package_iface_net",
     MSG,
     ed_software_package_iface_net
