@@ -1,24 +1,10 @@
 <h3 class="title is-5">Network Validation</h3>
-{% for net in net_validation %}
 <ul>
+    {% for warn in net_validation %}
     <li class="message">
-        <div class="message-header">
-            <h4>Network <code class="tag is-family-monospace">{{net[0]}}</code></h4>
+        <div class="message-body">
+            {{warn}}
         </div>
-        <ul class="p-2">
-            {% for warn in net[1] %}
-            <li class="message is-danger">
-                <div class="message-header">
-                    <p>
-                        Warning: {{warn[0]}}
-                    </p>
-                </div>
-                <div class="message-body">
-                    <p>{{warn[1]}}</p>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
     </li>
+    {% endfor %}
 </ul>
-{% endfor %}
