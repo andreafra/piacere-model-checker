@@ -108,7 +108,9 @@
         })
     </script>
 
+    {% if net_validation %}
     {% include "net.html" %}
+    {% endif %}
 </div>
 
 {% if csp %}
