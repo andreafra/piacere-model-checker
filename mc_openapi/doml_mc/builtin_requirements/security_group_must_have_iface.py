@@ -18,20 +18,43 @@ def security_group_must_have_iface(smtenc: SMTEncoding, smtsorts: SMTSorts) -> E
         ))
     )
 
+def security_group_must_have_iface_v3_1(smtenc: SMTEncoding, smtsorts: SMTSorts) -> ExprRef:
+    sg, elem = Consts("sg elem", smtsorts.element_sort)
+    return And(
+        smtenc.element_class_fun(
+            sg) == smtenc.classes["infrastructure_SecurityGroup"],
+        Not(Exists([elem],
+            Or(
+                smtenc.association_rel(
+                    elem, smtenc.associations["infrastructure_NetworkInterface::associated"], sg),
+                smtenc.association_rel(
+                    elem, smtenc.associations["infrastructure_ExecutionEnvironment::securityGroups"], sg)
+            )
+        ))
+    )
+
+
 def ed_security_group_must_have_iface(solver: Solver, smtsorts: SMTSorts, intermediate_model: IntermediateModel) -> str:
     try:
         sg = Const("sg", smtsorts.element_sort)
         sg_name = get_user_friendly_name(
             intermediate_model, solver.model(), sg)
         if sg_name:
-            return f"Security group '{sg_name}' is not associated with any network interface."
+            return f"Security group '{sg_name}' is not associated with any network interface. You should probably remove it."
     except:
-        return "A network interface doesn't belong to any security group, or a security group is not associated with any network interface."
+        return "A security group is not associated with any element. You should probably remove it."
 
-MSG = "All security group should be a associated to a network interface."
+MSG = "All security group should be a associated to an element."
 
 SECURITY_GROUP_MUST_HAVE_IFACE = (
     security_group_must_have_iface,
+    "security_group_must_have_iface",
+    MSG,
+    ed_security_group_must_have_iface
+)
+
+SECURITY_GROUP_MUST_HAVE_IFACE_V3_1 = (
+    security_group_must_have_iface_v3_1,
     "security_group_must_have_iface",
     MSG,
     ed_security_group_must_have_iface

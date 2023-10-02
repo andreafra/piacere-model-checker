@@ -18,7 +18,7 @@ from .iface_uniq import IFACE_UNIQ
 from .all_software_components_deployed import ALL_SOFTWARE_COMPONENTS_DEPLOYED
 from .all_infrastructure_elements_deployed import ALL_INFRASTRUCTURE_ELEMENTS_DEPLOYED, ALL_INFRASTRUCTURE_ELEMENTS_DEPLOYED_V3_1
 from .all_concrete_maps_something import ALL_CONCRETE_MAP_SOMETHING, ALL_CONCRETE_MAP_SOMETHING_V3_1
-from .security_group_must_have_iface import SECURITY_GROUP_MUST_HAVE_IFACE
+from .security_group_must_have_iface import SECURITY_GROUP_MUST_HAVE_IFACE, SECURITY_GROUP_MUST_HAVE_IFACE_V3_1
 from .concrete_asg_no_vm import CONCRETE_ASG_NO_VM
 from .vm_os_required import VM_OS_REQUIRED, VM_OS_REQUIRED_V3_1
 
@@ -36,6 +36,7 @@ __ALL__ = [
     ALL_CONCRETE_MAP_SOMETHING,
     ALL_CONCRETE_MAP_SOMETHING_V3_1,
     SECURITY_GROUP_MUST_HAVE_IFACE,
+    SECURITY_GROUP_MUST_HAVE_IFACE_V3_1,
     CONCRETE_ASG_NO_VM,
     VM_OS_REQUIRED,
     VM_OS_REQUIRED_V3_1
