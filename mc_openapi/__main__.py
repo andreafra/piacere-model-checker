@@ -3,6 +3,7 @@ import argparse
 import logging
 from logging.config import dictConfig
 import re
+import traceback
 
 from tabulate import tabulate
 import uvicorn
@@ -101,22 +102,27 @@ else:
             csp = verify_csp_compatibility(dmc)
             print_csp_results(csp)
         else:
-            res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
+            try:
+                res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
 
-            print("[RESULT]")
-            if res['result'] == MCResult.sat.name:
-                print(res['description'])
-            else:
-                print(res['result'])
-                print("[ERRORS]")
-                print("\033[91m{}\033[00m".format(res['description']))
-            
-            csp_res = res.get('csp')
-            if csp_res:
-                print("[CSP COMPATIBILITY RESULTS]")
-                print_csp_results(csp_res)
-
-
+                print("[RESULT]")
+                if res['result'] == MCResult.sat.name:
+                    print(res['description'])
+                else:
+                    print(res['result'])
+                    print("[ERRORS]")
+                    print("\033[91m{}\033[00m".format(res['description']))
+                
+                csp_res = res.get('csp')
+                if csp_res:
+                    print("[CSP COMPATIBILITY RESULTS]")
+                    print_csp_results(csp_res)
+            except Exception as e:
+                MSG_ERR_GENERIC = "An unknown error has occurred!\nTry with '-t 1' to get more detailed logs!\n\n"
+                err_msg = (e.message 
+                           if hasattr(e, 'message') 
+                           else MSG_ERR_GENERIC + traceback.format_exc())
+                print(f"\033[91m[ERROR]\n{err_msg}\033[00m")
 
     else: # Synthesis
         synthesize_model(dmc, domlr_src, args.tries)

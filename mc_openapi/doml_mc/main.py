@@ -44,7 +44,7 @@ def verify_model(
 
     # Parse external DOMLR file
     if external_domlr:
-        user_req_store, user_req_str_consts = domlr_parser.parse(external_domlr)
+        user_req_store, user_req_str_consts, flags = domlr_parser.parse(external_domlr)
 
     # Parse internal DOMLR requirements
     if DOMLVersion.has_DOMLR_support(dmc.doml_version):
@@ -83,6 +83,7 @@ def verify_model(
 
     # Log all requirements to check
     logging.debug("Checking following requirements: " + ", ".join([k.assert_name for k in req_store.get_all_requirements()]))
+    logging.debug("Flags: { " + ", ".join([f"{k}={v}" for k, v in flags.items()]) + " }")
 
     # Check satisfiability
     results = dmc.check_requirements(
