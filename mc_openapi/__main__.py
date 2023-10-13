@@ -84,47 +84,56 @@ else:
         # Read DOML file from path
         doml_xmi = xmif.read()
 
-    # Read DOMLR from path
-    domlr_src = None
-    if domlr_path:
-        with open(domlr_path, "r") as domlr_file:
-        # Read the user requirements written in DSL
-            domlr_src = domlr_file.read()
+    try:
+        # Read DOMLR from path
+        domlr_src = None
+        if domlr_path:
+            with open(domlr_path, "r") as domlr_file:
+            # Read the user requirements written in DSL
+                domlr_src = domlr_file.read()
 
-    # Config the model checker
-    dmc = init_model(doml_xmi, doml_ver)
+        # Config the model checker
+        dmc = init_model(doml_xmi, doml_ver)
+        ####### END OF INIT STEP #######
+        if not args.synth: # Verify Model/CSP Compatibility
 
-    ####### END OF INIT STEP #######
-    if not args.synth: # Verify Model/CSP Compatibility
-
-        # Check CSP Compatibility
-        if args.csp:
-            csp = verify_csp_compatibility(dmc)
-            print_csp_results(csp)
-        else:
-            try:
-                res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
-
-                print("[RESULT]")
-                if res['result'] == MCResult.sat.name:
-                    print(res['description'])
-                else:
-                    print(res['result'])
-                    print("[ERRORS]")
-                    print("\033[91m{}\033[00m".format(res['description']))
+            # Check CSP Compatibility
+            if args.csp:
+                csp = verify_csp_compatibility(dmc)
+                print_csp_results(csp)
+            else:
                 
-                csp_res = res.get('csp')
-                if csp_res:
-                    print("[CSP COMPATIBILITY RESULTS]")
-                    print_csp_results(csp_res)
-            except Exception as e:
-                MSG_ERR_GENERIC = "An unknown error has occurred!\nTry with '-t 1' to get more detailed logs!\n\n"
-                err_msg = (e.message 
-                           if hasattr(e, 'message') 
-                           else MSG_ERR_GENERIC + traceback.format_exc())
-                print(f"\033[91m[ERROR]\n{err_msg}\033[00m")
+                    res = verify_model(dmc, domlr_src, args.threads, args.consistency, args.skip_builtin)
 
-    else: # Synthesis
-        synthesize_model(dmc, domlr_src, args.tries)
-        # TODO: Do something with the results
+                    print("[RESULT]")
+                    if res['result'] == MCResult.sat.name:
+                        print(res['description'])
+
+                        print("[STATS]")
+                        for result in res['all_reqs']:
+                            print(f"\t{result['id']} - {result['time']} - {result['result']}")
+                    else:
+                        print(res['result'])
+                        print("[ERRORS]")
+                        print("\033[91m{}\033[00m".format(res['description']))
+
+                        print("[STATS]")
+                        for result in res['all_reqs']:
+                            print(f"\t{result['id']} - {result['time']} - {result['result']}")
+
+                    csp_res = res.get('csp')
+                    if csp_res:
+                        print("[CSP COMPATIBILITY RESULTS]")
+                        print_csp_results(csp_res)
+        else: # Synthesis
+            synthesize_model(dmc, domlr_src, args.tries)
+            # TODO: Do something with the results
         
+    except Exception as e:
+        MSG_ERR_GENERIC = "An unknown error has occurred!\nTry with '-t 1' to get more detailed logs!\n\n"
+        err_msg = (e.message 
+                    if hasattr(e, 'message') 
+                    else MSG_ERR_GENERIC + traceback.format_exc())
+        print(f"\033[91m[ERROR]\n{err_msg}\033[00m")
+
+       

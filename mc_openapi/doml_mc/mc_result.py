@@ -42,6 +42,19 @@ class MCResults:
         some_unsat = any(res == MCResult.unsat for res, _, _, _, _, _ in self.results)
         some_dontknow = any(res == MCResult.dontknow for res, _, _, _, _, _ in self.results)
 
+        all_reqs = [
+                        {
+                            "id": id,
+                            "type": type,
+                            "message": msg,
+                            "result": res.name,
+                            "description": desc,
+                            "time": time
+                        }
+                        for res, type, msg, id, desc, time in self.results
+                    ]
+
+
         if some_unsat:
             builtin_err_msgs = [
                 (id, msg, time) for res, type, msg, id, _, time in self.results if res == MCResult.unsat and type == "BUILTIN"]
@@ -60,18 +73,6 @@ class MCResults:
             if some_dontknow:
                 err_msg += '\n' + MCResults.DONTKNOW_MSG
             
-            all_reqs = [
-                {
-                    "id": id,
-                    "type": type,
-                    "message": msg,
-                    "result": res.name,
-                    "description": desc,
-                    "time": time
-                }
-                for res, type, msg, id, desc, time in self.results
-            ]
-
             return {
                 'result': MCResult.unsat,
                 'builtin': builtin_err_msgs,
@@ -83,7 +84,7 @@ class MCResults:
         elif some_dontknow:
             return {'result': MCResult.dontknow, 'description': MCResults.DONTKNOW_MSG }
         else:
-            return {'result': MCResult.sat, 'description': MCResults.SATISFIED_MSG }
+            return {'result': MCResult.sat, 'description': MCResults.SATISFIED_MSG, 'all_reqs': all_reqs }
 
     def add_results(self, results: "MCResults"):
         self.results.extend(results.results)
