@@ -9,7 +9,7 @@ CELEMS_V2_0 = [
 
 CELEMS_V3_1 = [
     *CELEMS_V2_0[0:5],
-    ("infrastructure_ComputingGroup", "concrete_RuntimeProvider::autoScalingGroups","concrete_AutoScalingGroup::maps"),
+    ("infrastructure_ComputingGroup", "concrete_RuntimeProvider::autoScalingGroups","concrete_AutoScalingGroup::maps")
 ]
 
 from .vm_has_iface import VM_HAS_IFACE, VM_HAS_IFACE_V2_3
