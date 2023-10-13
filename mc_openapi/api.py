@@ -1,5 +1,7 @@
 import logging
+from logging.config import dictConfig
 import os
+import sys
 import traceback
 from importlib.resources import files
 
@@ -8,6 +10,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.encoders import jsonable_encoder
+from fastapi.logger import logger
 
 import mc_openapi.assets as ASSETS
 from mc_openapi.doml_mc import (init_model, verify_csp_compatibility,
@@ -15,11 +18,15 @@ from mc_openapi.doml_mc import (init_model, verify_csp_compatibility,
 from mc_openapi.doml_mc.exceptions import *
 from mc_openapi.doml_mc.intermediate_model.metamodel import DOMLVersion
 from mc_openapi.doml_mc.mc import ModelChecker
+import time
 
 assets = files(ASSETS)
 static_path = assets / "static"
 templates_path = assets / "templates"
 app = FastAPI()
+
+print(">>> FastAPI+Uvicorn is incredibly asinine when it comes to logs, so lines prefixed with '>>>' are actually print(...)")
+print(">>> API starting up...")
 
 app.mount("/static", StaticFiles(directory=static_path), name="static")
 
@@ -32,17 +39,26 @@ async def root(request: Request):
 def handleDOMLX(doml_xmi: bytes, callback) -> dict:
     doml_version_str: str = None
     doml_version: DOMLVersion = None
+    start_time = time.time()
+    
+    print(">>> Received DOMLX. Beginning validation...")
+
     try:
         # First try to infer DOML version from ENV, then query params
         doml_version_str = os.environ.get("DOML_VERSION")
         
         if doml_version_str:
             doml_version = DOMLVersion.get(doml_version_str)
-            logging.info(f"Forcing DOML {doml_version.value}")
+            print(f">>> Forcing DOML {doml_version.value}")
 
         dmc = init_model(doml_xmi, doml_version)
 
         res = callback(dmc)
+
+        elapsed_time_in_seconds = f"{time.time() - start_time:.4f}"
+
+        print(f">>> Validation complete. It took {elapsed_time_in_seconds}s.")
+        res['elapsed_time'] = elapsed_time_in_seconds
 
         return res
     except KeyError as e:

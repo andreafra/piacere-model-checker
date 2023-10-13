@@ -89,7 +89,7 @@ def all_infrastructure_elements_deployed_v3_1(smtenc: SMTEncoding, smtsorts: SMT
             )
         )
 
-    ielem, concr, provider, celem, asg = Consts("ielem concr provider celem asg", smtsorts.element_sort)
+    ielem, concr, provider, celem, net, asg = Consts("ielem concr provider celem net asg", smtsorts.element_sort)
     return And(
         smtenc.element_class_fun(
             concr) == smtenc.classes["concrete_ConcreteInfrastructure"],
@@ -119,6 +119,21 @@ def all_infrastructure_elements_deployed_v3_1(smtenc: SMTEncoding, smtsorts: SMT
                                     celem, smtenc.associations["concrete_VirtualMachine::maps"], ielem)
                             )
                         )
+                    )
+                ))
+            ),
+            And(
+                smtenc.element_class_fun(ielem) == smtenc.classes["infrastructure_Subnet"],
+                Not(Exists([provider, net, celem],
+                    And(
+                        smtenc.association_rel(
+                            concr, smtenc.associations["concrete_ConcreteInfrastructure::providers"], provider),
+                        smtenc.association_rel(
+                            provider, smtenc.associations["concrete_RuntimeProvider::networks"], net),
+                        smtenc.association_rel(
+                            net, smtenc.associations["concrete_Network::subnets"], celem),
+                        smtenc.association_rel(
+                            celem, smtenc.associations["concrete_Network::maps"], ielem)
                     )
                 ))
             )
