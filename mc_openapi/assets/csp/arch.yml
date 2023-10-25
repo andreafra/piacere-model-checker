@@ -12,5 +12,5 @@ azure:
   - x86
   - ARM
 
-bad_csp:
-  - PowerPC
+# bad_csp:
+#   - PowerPC

@@ -84,7 +84,7 @@ def validate_network_address(imc: ModelChecker):
             debug += f"\tifaces=\t{get_assocs(inet, ASSOC_NETIFACE)}\n"
             debug += f"\tgateways=\t{get_assocs(inet, ASSOC_GATEWAYS)}\n"
         debug += "\n"
-        print(debug)
+        # print(debug)
 
         csubnet_ids = get_assocs(cnet, ASSOC_CONCRETE_SUBNETS)
         for csubnet_id in csubnet_ids:
@@ -168,15 +168,15 @@ def validate_network_address(imc: ModelChecker):
 
     concrete_networks = [e for e in im.values() if e.class_ == CONCRETE_NETWORK]
 
-    print('-'*20)
-    print('[DEBUG] Network Validation')
+    # print('-'*20)
+    # print('[DEBUG] Network Validation')
 
     for cnet in concrete_networks:
         validate_net(cnet)
                
-    print('-'*20)
-    print(warnings)
-    print('-'*20)
+    # print('-'*20)
+    # print(warnings)
+    # print('-'*20)
 
     # networks = [e for e in im.values() if e.class_ == 'concrete_Network']
     # subnets = [e for e in im.values() if e.class_ == 'infrastructure_Subnet']

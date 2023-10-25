@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="title">DOML Model Checker Results</h1>
+<h1 class="title">DOML Model Checker Results
+    <span class="tags has-addons">
+        <span class="tag is-dark">DOML Version</span>
+        <span class="tag is-info">{{doml_version}}</span>
+    </span>
+</h1>
 <div class="box">
     <h2 class="title is-4">Result:
         {% if result == "sat" %}
@@ -11,14 +16,8 @@
         {% endif %}
     </h2>
     <div class="control">
-        <div class="tags has-addons">
-            <span class="tag is-dark">DOML Version</span>
-            <span class="tag is-info">{{doml_version}}</span>
-        </div>
-        <p>Validated in {{elapsed_time}}s.</p>
+        <p>Model validated in {{elapsed_time}}s.</p>
     </div>
-    {% if result != "sat" %}
-
     {% if all_reqs %}
     <label class="checkbox my-4">
         <input type="checkbox" id="show-sat-reqs">
@@ -50,13 +49,13 @@
         <li class="message is-success sat-req is-hidden">
             <div class="message-header">
                 <p>
-                    Satisfied ({{req.time}}s)
-                </p>
-                <p>
                     <span class="tag is-family-monospace is-success is-light">
                         {{req.id}}
                     </span>
                     <span class="tag is-success is-light">{{req.type}}</span>
+                </p>
+                <p>
+                    satisfied ({{req.time}}s)
                 </p>
             </div>
             <div class="message-body">
@@ -99,21 +98,22 @@
         </div>
     </article>
     {% endif %}
-    {% endif %}
-    <script>
-        const checkbox = document.querySelector("#show-sat-reqs")
-        const satReqs = document.querySelectorAll(".sat-req")
-
-        checkbox.addEventListener("click", () => {
-            satReqs.forEach(el => el.classList.toggle('is-hidden'))
-        })
-    </script>
 
     {% if net_validation %}
     {% include "net.html" %}
+    {% else %}
+    <h3 class="title is-5">Network Validation</h3>
+    No issue detected within the model network configuration.
     {% endif %}
 </div>
+<script>
+    const checkbox = document.querySelector("#show-sat-reqs")
+    const satReqs = document.querySelectorAll(".sat-req")
 
+    checkbox.addEventListener("click", () => {
+        satReqs.forEach(el => el.classList.toggle('is-hidden'))
+    })
+</script>
 {% if csp %}
 {% include "csp_content.html" %}
 {% endif %}

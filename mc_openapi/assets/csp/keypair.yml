@@ -7,10 +7,18 @@ aws:
 
 azure:
   - RSA
-
+  - RSA1_5
+  - RSA-OAEP
+  - RSA-OAEP-256
+  - EC
+  - P-256
+  - P-256K
+  - P-384
+  - P-521
 gcp: 
   - Elliptic Curve
   - RSA
+  - ECDSA
 
-bad_csp:
-  - OLD_ALGO
+# bad_csp:
+#   - OLD_ALGO
